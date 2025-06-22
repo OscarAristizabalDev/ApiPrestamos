@@ -1,7 +1,7 @@
 
 import { IsNotEmpty, IsNumber } from 'class-validator';
 
-export class CalculatePaymentDto {
+export class CalculateQuoteDto {
 
     @IsNotEmpty()
     @IsNumber()
@@ -13,11 +13,11 @@ export class CalculatePaymentDto {
 
     @IsNotEmpty()
     @IsNumber()
-    readonly numberPayments: number;
+    readonly numberQuotes: number;
 
     @IsNotEmpty()
     @IsNumber()
-    readonly interestPercentage: number;
+    readonly interestRate: number;
 
 
 }

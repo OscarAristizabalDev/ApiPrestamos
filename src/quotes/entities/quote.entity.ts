@@ -1,5 +1,5 @@
 
-export class Payment {
+export class Quote {
     number: number;
     expirationDate: Date;
     interestValue: number
