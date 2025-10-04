@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
-import { QuotesService } from './quotes.service';
-import { QuotesController } from './quotes.controller';
+import { QuoteService } from './quote.service';
+import { QuoteController } from './quote.controller';
 // import { PaymentStrategyService } from './strategies/payment-expiration-date.service';
 import { MonthlyQuoteStrategy } from './strategies/monthly-quote.strategy';
 import { QuoteExpirationDateService } from './strategies/quote-expiration-date.service';
 
 @Module({
-  controllers: [QuotesController],
+  controllers: [QuoteController],
   providers: [
-    QuotesService, 
+    QuoteService, 
     QuoteExpirationDateService,
     { provide: 'QuoteExpirationDateStrategy', useClass: MonthlyQuoteStrategy }, // Example provider
   ],
-  exports: [QuotesService, QuoteExpirationDateService],
+  exports: [QuoteService, QuoteExpirationDateService],
 })
 export class QuotesModule {}

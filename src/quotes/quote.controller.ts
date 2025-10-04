@@ -1,13 +1,13 @@
 import { Body, Controller, Post, } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 
-import { QuotesService } from './quotes.service';
+import { QuoteService } from './quote.service';
 import { CalculateQuoteDto } from './dto/calculate-quote.dto';
 
 @Controller('quotes')
-export class QuotesController {
+export class QuoteController {
 
-    constructor(private readonly quotesService: QuotesService, private readonly moduleRef: ModuleRef) { }
+    constructor(private readonly quotesService: QuoteService, private readonly moduleRef: ModuleRef) { }
 
     @Post('calculate')
     async calculate(@Body() dto: CalculateQuoteDto) {

@@ -12,7 +12,7 @@ import { DailyQuoteStrategy } from './strategies/daily-quote.strategy';
 
 
 @Injectable({ scope: Scope.REQUEST })
-export class QuotesService {
+export class QuoteService {
 
     constructor(private readonly quoteStrategyService: QuoteExpirationDateService) {}
 
