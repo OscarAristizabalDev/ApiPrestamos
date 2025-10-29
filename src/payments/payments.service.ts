@@ -1,6 +1,6 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { CalculatePaymentDto } from './dto/calculate-payment.dto';
-import { Payment } from './entities/payment.entity';
+import { PaymentLoan } from './entities/payment.entity';
 import { MonthlyPaymentStrategy } from './strategies/monthly-payment.strategy';
 import { FortnightlyPaymentStrategy } from './strategies/fortnightly-payment.strategy';
 import { PaymentExpirationDateService } from './strategies/payment-expiration-date.service';
@@ -14,7 +14,7 @@ export class PaymentsService {
 
     constructor(private readonly paymentStrategyService: PaymentExpirationDateService) {}
 
-    async calculate(dto: CalculatePaymentDto): Promise<Payment[]> {
+    async calculate(dto: CalculatePaymentDto): Promise<PaymentLoan[]> {
         const { amount, frequency, numberPayments, interestPercentage } = dto;
 
 
@@ -33,13 +33,13 @@ export class PaymentsService {
 
         this.paymentStrategyService.setStrategy(strategy)
 
-        const payments: Payment[] = [];
+        const payments: PaymentLoan[] = [];
         const currentDate = new Date();
 
         let i = 1;
         while (i <= numberPayments) {
 
-            let payment = new Payment();
+            let payment = new PaymentLoan();
             payment.number = i;
 
             payment.expirationDate = await this.paymentStrategyService.calculate(currentDate, i);
