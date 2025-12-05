@@ -1,15 +1,31 @@
 import { Module } from "@nestjs/common";
 import { ClientsController } from "./clients.controller";
 import { ClientsService } from "./clients.service";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { Client } from "./entities/clients.entity";
-import { TypeDocument } from "./entities/type-document.entity";
-import { Loans } from "src/loans/entities/loans.entity";
+import { MongooseModule } from "@nestjs/mongoose";
+import { Client, ClientSchema } from "./schemas/client.schema";
+import { ClientsRepository } from './repositories/clients.repository';
+import { TypeDocumentRepository } from "./repositories/type-document.repository";
+import { TypeDocument, TypeDocumentSchema } from "./schemas/type-document-schema";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Client, TypeDocument, Loans])],
+    imports: [MongooseModule.forFeature([
+        {name: Client.name, schema: ClientSchema},
+        {name: TypeDocument.name, schema: TypeDocumentSchema}
+    ])],
     controllers: [ClientsController],
-    providers: [ClientsService],
-    exports: [ClientsService, TypeOrmModule]
+    providers: [
+        ClientsService,
+        ClientsRepository,
+        TypeDocumentRepository,
+        {
+            provide: 'IClientRepository',
+            useClass: ClientsRepository,
+        },
+        {
+            provide: 'ITypeDocumentRepository',
+            useClass: TypeDocumentRepository,
+        }
+        ],
+    exports: [ClientsService, MongooseModule]
 })
 export class ClientsModule{}

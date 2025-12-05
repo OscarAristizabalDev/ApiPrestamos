@@ -1,17 +1,21 @@
-import { ApiPropertyOptional, PartialType } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { IsEmail, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { IsDate, IsEmail, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
+import { Types } from "mongoose";
 
 
 export class ListClientsDto{
     @IsOptional()
     @IsString()
-    @IsEmail()
-    email: string;
+    fullName?: string;
 
     @IsOptional()
     @IsString()
-    document_number: string;
+    email?: string;
+
+    @IsOptional()
+    @IsString()
+    documentNumber?: string;
 
     @Type(() => Number) // convierte string del body/query en number
     @IsInt({ message: 'La página debe ser un número entero' })
@@ -23,17 +27,12 @@ export class ListClientsDto{
     @Min(1, { message: 'El límite debe ser mayor o igual a 1' })
     limit: number;
 }
-
-export class DocumentTypesDto{
-    @Expose()
-    readonly id: number;
-
-    @Expose()
-    readonly description: string;
-}
-
-
 export class CreateClientsDto{
+
+    @IsOptional()
+    @IsString()
+    id?: string;
+
     @IsNotEmpty()
     @IsString()
     names: string;
@@ -42,6 +41,30 @@ export class CreateClientsDto{
     @IsString()
     surnames: string;
 
+    @IsOptional()
+    @IsString()
+    fullName: string;
+
+    @ApiProperty()
+    @Type(() => Date)
+    @IsNotEmpty()
+    @IsDate()
+    registrationDate: Date;
+
+    @ApiProperty()
+    @Type(() => Date)
+    @IsNotEmpty()
+    @IsDate()
+    birthdate: Date;
+
+    @IsNotEmpty()
+    @IsString()
+    typeDocument: number;
+
+    @IsNotEmpty()
+    @IsString()
+    documentNumber: string;
+
     @IsNotEmpty()
     @IsString()
     @IsEmail()
@@ -49,7 +72,7 @@ export class CreateClientsDto{
 
     @IsNotEmpty()
     @IsString()
-    phone_number: string;
+    phoneNumber: string;
 
     @IsNotEmpty()
     @IsString()
@@ -57,15 +80,34 @@ export class CreateClientsDto{
 
     @IsNotEmpty()
     @IsString()
-    birthdate: string;
-
-    @IsNotEmpty()
-    @IsNumber()
-    type_document_id: number;
+    employmentStatus: string;
 
     @IsNotEmpty()
     @IsString()
-    document_number: string;
+    employerName: string;
+
+    @IsNotEmpty()
+    @IsNumber()
+    monthlyIncome: string;
+
+    @IsNotEmpty()
+    @IsNumber()
+    @IsInt()
+    creditScore: string;
+
+    @IsNotEmpty()
+    @IsString()
+    riskCategory: string;
+
+    @IsNotEmpty()
+    @IsString()
+    notes: string;
+
+    @IsNotEmpty()
+    @IsInt()
+    @Min(0, { message: 'Value must be greater or equal to 0' })
+    @Max(3, { message: 'Value must be less or equal to 3' })
+    active: string;
 }
 
 export class ResponseClientsDto{
@@ -78,22 +120,61 @@ export class ResponseClientsDto{
 }
 
 export class FindOneClientDto{
-    @ApiPropertyOptional({ description: 'Id del cliente', example: '1' })
+    @ApiPropertyOptional({ description: 'Client ID', example: '1' })
     @IsOptional()
-    @IsInt({message: ' value must be a Integer number'})
-    @Min(1, { message: 'value must be greater than zero'})
-    id: number;
+    @IsString()
+    id?: string;
 
-    @ApiPropertyOptional({ description: 'Correo electrónico del cliente', example: 'miguel@example.com' })
+    @ApiPropertyOptional({ description: 'Client FullName', example: 'Adolf F Kennedy' })
+    @IsOptional()
+    @IsString()
+    fullName?: string;
+
+    @ApiPropertyOptional({ description: 'Client ID number', example: '1234567890' })
+    @IsOptional()
+    @IsString()
+    documentNumber?: string;
+
+    @ApiPropertyOptional({ description: 'Client email', example: '1234567890' })
     @IsOptional()
     @IsString()
     @IsEmail()
-    email: string;
+    email?: string;
+}
 
-    @ApiPropertyOptional({ description: 'Número de documento del cliente', example: '1234567890' })
-    @IsOptional()
-    @IsString()
-    document: string;
+export class FoundClientDto {
+    @Expose()
+    readonly id: string | Types.ObjectId | unknown;
+    @Expose()
+    readonly names: string;
+    @Expose()
+    readonly surnames: string;
+    @Expose()
+    readonly fullName: string;
+    @Expose()
+    readonly email: string;
+    @Expose()
+    readonly phoneNumber: string;
+    @Expose()
+    readonly address: string;
+    @Expose()
+    readonly birthdate: string;
+    @Expose()
+    readonly typeDocument: string;
+    @Expose()
+    readonly documentNumber: string;
+    @Expose()
+    readonly employmentStatus: string;
+    @Expose()
+    readonly employerName: string;
+    @Expose()
+    readonly monthlyIncome: number;
+    @Expose()
+    readonly creditScore: number;
+    @Expose()
+    readonly riskCategory: string;
+    @Expose()
+    readonly notes: string;
 }
 
 export class UpdateClientsDto extends PartialType(CreateClientsDto){

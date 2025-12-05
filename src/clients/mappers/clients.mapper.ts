@@ -1,29 +1,37 @@
-import { Client } from "../entities/clients.entity";
-
+import { FoundClientDto } from "../dtos/clients.dto";
+import { Client, ClientDocument } from "../schemas/client.schema";
 export class ClientMapper{
-    static toDto(client: Client) {
+    static toDto(client: ClientDocument) {
         return {
-          id: client.id,
+          id: client._id,
           names: client.names,
           surnames: client.surnames,
+          fullName: client.fullName,
           email: client.email,
-          document_number: client.document_number
+          documentNumber: client.documentNumber
         };
       }
 }
 
 export class RowFoundClientMapper{
-    static toDto(client: Client) {
+    static toDto(client: ClientDocument): FoundClientDto {
         return {
-          id: client.id,
+          id: client._id,
           names: client.names,
           surnames: client.surnames,
+          fullName: client.fullName,
           email: client.email,
-          phone_number: client.phone_number,
+          phoneNumber: client.phoneNumber,
           address: client.address,
-          birthdate: client.birthdate,
-          type_document_id: client.type_document_id,
-          document_number: client.document_number
+          birthdate: client.birthdate.toISOString(),
+          typeDocument: client.typeDocument.toString(),
+          documentNumber: client.documentNumber,
+          employmentStatus: client.employmentStatus,
+          employerName: client.employerName,
+          monthlyIncome: client.monthlyIncome,
+          creditScore: client.creditScore,
+          riskCategory: client.riskCategory,
+          notes: client.notes,
         };
       }
 }

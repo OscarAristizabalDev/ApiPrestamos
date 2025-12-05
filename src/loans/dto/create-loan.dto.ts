@@ -52,7 +52,7 @@ export class CreateLoanDto {
 
     @IsNotEmpty()
     @IsInt()
-    approved_by?: number; // relación con user.id
+    approved_by?: string; // relación con user.id
 
     @IsNotEmpty()
     @IsString()

@@ -1,10 +1,9 @@
 import { plainToInstance } from "class-transformer";
-import { Loans } from "../entities/loans.entity";
 import { LoanRaw } from "../interfaces/loan-raw.interface";
 import { LoanResponseDto } from "../dto/create-loan.dto";
 
 export class LoanMapper {
-    static toDto(loan: Loans) {
+    static toDto(loan: any) {
       return {
         id: loan.id,
         amount: Number(loan.amount),
@@ -13,7 +12,7 @@ export class LoanMapper {
         start_date: loan.start_date,
         end_date: loan.end_date,
         created_at: loan.created_at,
-        approved_by_id: loan.approvedBy ? loan.approvedBy.id : null,
+        approved_by_id: loan.approvedBy ?? null,
         client_id: loan.client ? loan.client.id : null,
       };
     }

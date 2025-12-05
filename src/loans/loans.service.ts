@@ -1,11 +1,9 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Loans } from "./entities/loans.entity";
 import { Repository } from "typeorm";
 import { LoanMapperRaw } from "./mappers/loans.mapper";
 import { CreateLoanDto } from "./dto/create-loan.dto";
-import { Client } from "src/clients/entities/clients.entity";
 
 @Injectable()
 export class LoansService{
@@ -14,10 +12,8 @@ export class LoansService{
 
     constructor(
         private readonly config: ConfigService,
-        @InjectRepository(Loans)
-        private readonly loanRepository: Repository<Loans>,
-        @InjectRepository(Client)
-        private readonly clientRepository: Repository<Client>,
+        private readonly loanRepository: Repository<any>,
+        private readonly clientRepository: Repository<any>,
     ){
         this.defaultLimit = +this.config.get<number>('PAGINATION_LIMIT', 10);
     }

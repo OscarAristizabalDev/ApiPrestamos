@@ -1,7 +1,6 @@
-import { Body, ConflictException, Controller, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { BadRequestException, Body, ConflictException, Controller, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { AuthService } from './services/auth.service';
 import { Request, Response } from 'express';
-import { Users } from '../users/users.entity';
 import { ApiBody, ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { LoginDto } from './dto/login.dto';
@@ -49,7 +48,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      path: '/auth/refresh',
+      path: '/auth/',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
     });
 
@@ -64,13 +63,13 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Token refrescado con éxito.' })
   async refresh(@Req() req: Request, @AuthUser() user: CurrentUserDto, @Res({ passthrough: true }) res: Response) {
     const token = req.cookies['refreshToken'];
-    const tokens = await this.authService.refresh(user.id.toString(),token);
+    const tokens = await this.authService.refresh(user.id,token);
 
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      path: '/auth/refresh',
+      path: '/auth/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -111,8 +110,9 @@ export class AuthController {
   })
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const token = req.cookies['refreshToken'];
+    if(!token) throw new BadRequestException('refresh token not found in cookies');
     await this.authService.logout(token);
-    res.clearCookie('refreshToken', { path: '/auth/refresh' });
+    res.clearCookie('refreshToken', { path: '/auth/' });
     return { message: 'Logged out successfully' };
   }
 }

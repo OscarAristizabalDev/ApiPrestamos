@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { ROLES_KEY } from "../decorators/roles.decorator";
-import { RequestWithUser } from "../interfaces/request-with-user.interface";
+import { Request } from "express";
 
 
 @Injectable()
@@ -17,14 +17,14 @@ export class RolesGuard implements CanActivate {
             return true;
         }
 
-        const request = context.switchToHttp().getRequest<RequestWithUser>();
+        const request = context.switchToHttp().getRequest<Request>();
         const user = request.user;
 
         if (!user) {
             throw new ForbiddenException('User couldnt be identified in request');
         }
 
-        const hasRole = requiredRoles.some((role) => user?.role?.includes(role));
+        const hasRole = requiredRoles.some((role) => user?.['role']?.includes(role));
 
         if (!hasRole) {
             throw new ForbiddenException(

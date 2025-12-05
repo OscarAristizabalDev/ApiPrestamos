@@ -1,7 +1,63 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { IsDateString, IsEmail, IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
+import { Expose, Type } from "class-transformer";
+import { IsDate, IsEmail, IsInt, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, Length, Min } from "class-validator";
+import { Types } from "mongoose";
+
+export class SearchTerms{
+    @Type(() => Number) // convierte string del body/query en number
+    @IsInt({ message: 'La página debe ser un número entero' })
+    @Min(1, { message: 'La página debe ser mayor o igual a 1' })
+    id?: string;
+
+    @IsOptional()
+    @IsString()
+    @IsEmail()
+    email?: string;
+
+    @IsOptional()
+    @IsString()
+    fullName?: string;
+}
+export class ListUsersDto{
+    @IsOptional()
+    @IsObject()
+    @Type(() => SearchTerms)
+    terms?: SearchTerms;
+
+    @Type(() => Number) // convierte string del body/query en number
+    @IsInt({ message: 'La página debe ser un número entero' })
+    @Min(1, { message: 'La página debe ser mayor o igual a 1' })
+    page: number;
+
+    @Type(() => Number)
+    @IsInt({ message: 'El límite debe ser un número entero' })
+    @Min(1, { message: 'El límite debe ser mayor o igual a 1' })
+    limit: number;
+}
 
 export class CreateUserDto {
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsString()
+    names: string;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsString()
+    surnames: string;
+    
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsString()
+    fullName: string;
+
+    @ApiProperty()
+    @Type(() => Date)
+    @IsNotEmpty()
+    @IsDate()
+    registrationDate: Date;
+    
     @ApiProperty()
     @IsNotEmpty()
     @IsEmail()
@@ -14,29 +70,25 @@ export class CreateUserDto {
     password: string;
 
     @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    names: string;
-
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString()
-    surnames: string;
-
-    @ApiProperty()
     @IsOptional()
     @IsString()
     phoneNumber?: string;
-
+    
     @ApiProperty()
     @IsOptional()
     @IsString()
     address?: string;
 
     @ApiProperty()
+    @Type(() => Date)
+    @IsNotEmpty()
+    @IsDate()
+    birthdate: Date;
+
+    @ApiProperty()
     @IsOptional()
     @IsString()
-    city?: string;
+    refreshToken?: string;
 
     @ApiProperty()
     @IsOptional()
@@ -45,13 +97,8 @@ export class CreateUserDto {
 
     @ApiProperty()
     @IsOptional()
-    @IsString()
-    postalCode?: string;
-
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsDateString()
-    birthdate: Date;
+    @IsNumber()
+    active?: number;
 
     @ApiProperty()
     @IsOptional()
@@ -61,22 +108,24 @@ export class CreateUserDto {
 
 export class UserResponseDto {
     @ApiProperty()
+    @Expose()
+    readonly id: string;
+
+    @ApiProperty()
+    @Expose()
     readonly email: string;
 
     @ApiProperty()
+    @Expose()
     readonly names: string;
 
     @ApiProperty()
+    @Expose()
     readonly surnames: string;
 
     @ApiProperty()
+    @Expose()
     readonly phoneNumber?: string;
-
-    @ApiProperty()
-    readonly city?: string;
-
-    @ApiProperty()
-    readonly role: string;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
@@ -89,6 +138,27 @@ export class LoginDto {
     @IsNotEmpty()
     @IsString()
     password: string;
+}
+
+export class FoundUserDto{
+    @Expose()
+    readonly id: string | Types.ObjectId | unknown;
+    @Expose()
+    readonly names: string;
+    @Expose()
+    readonly surnames: string;
+    @Expose()
+    readonly fullName: string;
+    @Expose()
+    readonly email: string;
+    @Expose()
+    readonly phoneNumber: string;
+    @Expose()
+    readonly address: string;
+    @Expose()
+    readonly registrationDate: string;
+    @Expose()
+    readonly role: string;
 }
 
 export class AuthResponseDto {

@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { ModulesContainer, NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import cookie from '@fastify/cookie';
 import {
   FastifyAdapter,
@@ -17,7 +17,7 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter()
   );
-  const configService = app.get(ConfigService);
+  const configService = app.get(ConfigService);  
 
   app.use(cookieParser());
   await app.register(cookie, {
