@@ -7,6 +7,7 @@ import { UserMapper } from './mapper/user.mapper';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRepositoryRaws } from './interfaces/user.interface';
+import { ROLEACCESS } from 'src/clients/interfaces/client-repository.interface';
 
 @ApiTags('Users')
 @Controller('users')
@@ -15,7 +16,7 @@ export class UserController {
     constructor(private readonly userService: UserService) {}
 
     @Get()
-    @Roles('admin')
+    @Roles(ROLEACCESS.MIDACCESS)
     async findAll(@Query('data') data: string): Promise<UserRepositoryRaws<FoundUserDto>> {
         if(!data) throw new BadRequestException('Data for search not found');
         const decodedData: ListUsersDto = JSON.parse(atob(data));
@@ -32,7 +33,7 @@ export class UserController {
     }
 
     @Post()
-    @Roles('admin')
+    @Roles(ROLEACCESS.MIDACCESS)
     async create(@Body() userDto: CreateUserDto): Promise<Partial<UserResponseDto>> {
         if(!userDto) throw new BadRequestException('no body data found');
         const user = await this.userService.create(userDto);
@@ -41,12 +42,14 @@ export class UserController {
 
     @Put()
     async update(@Query('id') id: string, @Body() userDto: UpdateUserDto): Promise<Partial<UserResponseDto> | null> {
+        if(!userDto || !id) throw new BadRequestException('no body or id data found');
         const userUpdated = await this.userService.update(id, userDto);
         return userUpdated ? UserMapper.toDto(userUpdated) : null;
     }
     
     @Delete(':id')    
     async delete(@Param('id') id: string): Promise<string> {
+        if(!id) throw new BadRequestException('no id data found');
         const userDeleted = await this.userService.delete(id);
         return userDeleted;
     }
