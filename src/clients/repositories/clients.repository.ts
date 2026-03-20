@@ -30,8 +30,10 @@ export class ClientsRepository implements IClientRepository{
         const [clients, total] = await Promise.all([
             this.clientModel
               .find(searchTerms)
+              .populate('typeDocument', 'description')
               .skip(skip)
               .limit(take)
+              .lean()
               .exec(),
             this.clientModel.countDocuments({}).exec()
           ]);

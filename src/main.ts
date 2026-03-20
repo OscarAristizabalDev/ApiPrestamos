@@ -24,8 +24,28 @@ async function bootstrap() {
     secret: process.env.COOKIE_SECRET || 'secret',
   });
   app.use(helmet());
+  // Logger para ver todas las peticiones
+  /*app.use((req, res, next) => {
+    console.log('=================================');
+    console.log('🕐 Timestamp:', new Date().toISOString());
+    console.log('🌐 IP:', req.ip || req.connection.remoteAddress);
+    console.log('📡 Method:', req.method);
+    console.log('🔗 URL:', req.url);
+    console.log('📨 Headers:', {
+      origin: req.headers.origin,
+      host: req.headers.host,
+      'user-agent': req.headers['user-agent'],
+      'content-type': req.headers['content-type'],
+      authorization: req.headers.authorization ? 'Bearer [HIDDEN]' : undefined
+    });
+    console.log('=================================');
+    next();
+  });*/
   app.enableCors({
-    origin:['http://localhost:4200'], // Frontend
+    origin:[
+      //'http://localhost:4200', // Frontend web
+      'https://sirenically-slippiest-lylah.ngrok-free.dev', // Frontend mobile - Ver docs de NGROK para uso local de expo
+    ], 
     credentials: true
   })
 

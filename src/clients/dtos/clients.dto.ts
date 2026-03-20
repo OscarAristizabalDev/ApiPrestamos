@@ -88,12 +88,12 @@ export class CreateClientsDto{
 
     @IsNotEmpty()
     @IsNumber()
-    monthlyIncome: string;
+    monthlyIncome: number;
 
     @IsNotEmpty()
     @IsNumber()
     @IsInt()
-    creditScore: string;
+    creditScore: number;
 
     @IsNotEmpty()
     @IsString()

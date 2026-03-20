@@ -1,9 +1,8 @@
-import { BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
-import { AuthUser } from "src/auth/decorators/auth-user.decorator";
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { Roles } from "src/auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "src/auth/guards/auth.guard";
 import { RolesGuard } from "src/auth/guards/roles.guard";
-import { CreateClientsDto, FindOneClientDto, ListClientsDto, UpdateClientsDto } from "./dtos/clients.dto";
+import { CreateClientsDto, FindOneClientDto, UpdateClientsDto } from "./dtos/clients.dto";
 import { ClientsService } from "./clients.service";
 import { ClientMapper, RowFoundClientMapper } from "./mappers/clients.mapper";
 import { ROLEACCESS } from "./interfaces/client-repository.interface";
@@ -33,11 +32,9 @@ export class ClientsController{
     
     @Get('all')
     @Roles(ROLEACCESS.MIDACCESS)
-    async getAllClients(@Query('data') data: string){
-        if(!data) throw new BadRequestException('Data terms not found');
-        const decodedData: ListClientsDto = JSON.parse(atob(data));
-        if(!decodedData.page || !decodedData.limit) throw new BadRequestException('Page or limit param not provided');        
-        return await this.clientsService.getAllClientsPaginated(decodedData);;
+    async getAllClients(@Query('page') page: string, @Query('limit') limit: string){      
+        if(!page || !limit) throw new BadRequestException('Page or limit param not provided');
+        return await this.clientsService.getAllClientsPaginated({page: parseInt(page), limit: parseInt(limit)});
     }
 
     @Post()

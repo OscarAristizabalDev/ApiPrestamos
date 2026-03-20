@@ -1,4 +1,5 @@
 import { FoundClientDto } from "../dtos/clients.dto";
+import { DocumentTypesDto } from "../dtos/type-document.dto";
 import { Client, ClientDocument } from "../schemas/client.schema";
 export class ClientMapper{
     static toDto(client: ClientDocument) {
@@ -24,7 +25,8 @@ export class RowFoundClientMapper{
           phoneNumber: client.phoneNumber,
           address: client.address,
           birthdate: client.birthdate.toISOString(),
-          typeDocument: client.typeDocument.toString(),
+          //typeDocument: client.typeDocument.toString(),
+          typeDocument: (client.typeDocument as unknown as DocumentTypesDto).description,
           documentNumber: client.documentNumber,
           employmentStatus: client.employmentStatus,
           employerName: client.employerName,
