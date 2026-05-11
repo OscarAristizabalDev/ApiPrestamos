@@ -21,7 +21,8 @@ export interface ClientRepositoryRaw<T>{
 export interface ClientSearchTermsRaw{
     documentNumber?: {$regex: string, $options: string}, 
     email?: {$regex: string, $options: string}, 
-    fullName?: {$regex: string, $options: string}
+    fullName?: {$regex: string, $options: string},
+    inputSearch?: {$regex: string, $options: string}
 }
 
 export enum ROLEACCESS{

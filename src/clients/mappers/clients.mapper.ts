@@ -16,6 +16,7 @@ export class ClientMapper{
 
 export class RowFoundClientMapper{
     static toDto(client: ClientDocument): FoundClientDto {
+      const typeDocRaw = client.typeDocument as any;
         return {
           id: client._id,
           names: client.names,
@@ -26,7 +27,10 @@ export class RowFoundClientMapper{
           address: client.address,
           birthdate: client.birthdate.toISOString(),
           //typeDocument: client.typeDocument.toString(),
-          typeDocument: (client.typeDocument as unknown as DocumentTypesDto).description,
+          typeDocument: {
+            id: typeDocRaw!._id.toString(),
+            description: typeDocRaw!.description,
+          },
           documentNumber: client.documentNumber,
           employmentStatus: client.employmentStatus,
           employerName: client.employerName,

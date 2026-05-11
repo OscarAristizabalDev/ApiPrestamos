@@ -1,7 +1,8 @@
-import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional, OmitType, PartialType } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { IsDate, IsEmail, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsDate, IsEmail, IsInt, IsMongoId, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
 import { Types } from "mongoose";
+import { DocumentTypesDto } from "./type-document.dto";
 
 
 export class ListClientsDto{
@@ -16,6 +17,10 @@ export class ListClientsDto{
     @IsOptional()
     @IsString()
     documentNumber?: string;
+
+    @IsOptional()
+    @IsString()
+    inputSearch?: string;
 
     @Type(() => Number) // convierte string del body/query en number
     @IsInt({ message: 'La página debe ser un número entero' })
@@ -47,7 +52,7 @@ export class CreateClientsDto{
 
     @ApiProperty()
     @Type(() => Date)
-    @IsNotEmpty()
+    @IsOptional()
     @IsDate()
     registrationDate: Date;
 
@@ -57,9 +62,11 @@ export class CreateClientsDto{
     @IsDate()
     birthdate: Date;
 
+    @ApiProperty()
+    @Type(() => Types.ObjectId)
     @IsNotEmpty()
     @IsString()
-    typeDocument: number;
+    typeDocument: string | Types.ObjectId | unknown;
 
     @IsNotEmpty()
     @IsString()
@@ -107,7 +114,7 @@ export class CreateClientsDto{
     @IsInt()
     @Min(0, { message: 'Value must be greater or equal to 0' })
     @Max(3, { message: 'Value must be less or equal to 3' })
-    active: string;
+    active: number;
 }
 
 export class ResponseClientsDto{
@@ -129,6 +136,11 @@ export class FindOneClientDto{
     @IsOptional()
     @IsString()
     fullName?: string;
+
+    @ApiPropertyOptional({ description: 'Client input search', example: 'Adolf F Kennedy' })
+    @IsOptional()
+    @IsString()
+    inputSearch?: string;
 
     @ApiPropertyOptional({ description: 'Client ID number', example: '1234567890' })
     @IsOptional()
@@ -160,7 +172,7 @@ export class FoundClientDto {
     @Expose()
     readonly birthdate: string;
     @Expose()
-    readonly typeDocument: string;
+    readonly typeDocument: DocumentTypesDto;
     @Expose()
     readonly documentNumber: string;
     @Expose()
@@ -177,6 +189,13 @@ export class FoundClientDto {
     readonly notes: string;
 }
 
-export class UpdateClientsDto extends PartialType(CreateClientsDto){
-}
+export class UpdateClientsDto extends PartialType(
+    OmitType(CreateClientsDto, ['id'] as const)
+  ) {
+    @ApiProperty()
+    @Type(() => Types.ObjectId)
+    @IsNotEmpty()
+    @IsMongoId()
+    id: string;
+  }
 

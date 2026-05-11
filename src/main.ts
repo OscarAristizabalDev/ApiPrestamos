@@ -1,4 +1,6 @@
 import 'reflect-metadata';
+//import { setServers } from 'node:dns';
+//setServers(['8.8.8.8', '1.1.1.1']);
 import { NestFactory } from '@nestjs/core';
 import cookie from '@fastify/cookie';
 import {

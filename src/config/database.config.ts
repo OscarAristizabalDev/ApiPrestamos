@@ -11,5 +11,6 @@ export default registerAs('mongodb', () => ({
   // poolSize: parseInt(process.env.DB_POOL_SIZE || '10'),
   maxPoolSize: parseInt(process.env.DB_POOL_SIZE || '10'),
   connectTimeoutMS: parseInt(process.env.DB_CONNECT_TIMEOUT || '10000'),
+  serverSelectionTimeoutMS: parseInt(process.env.DB_SERVER_SELECTION_TIMEOUT || '5000'),
   socketTimeoutMS: parseInt(process.env.DB_SOCKET_TIMEOUT || '45000'),
 }));

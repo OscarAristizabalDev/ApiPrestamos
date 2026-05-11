@@ -10,6 +10,7 @@ import { QuotesModule } from './quotes/quotes.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import mongodbConfig from './config/database.config';
 import * as passport from 'passport';
+import { ProductsModule } from './products/products.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -26,6 +27,7 @@ import * as passport from 'passport';
           retryWrites: config.retryWrites,
           w: config.w,
           maxPoolSize: config.maxPoolSize,
+          serverSelectionTimeoutMS: config.serverSelectionTimeoutMS,
           connectTimeoutMS: config.connectTimeoutMS,
           socketTimeoutMS: config.socketTimeoutMS,
           tlsAllowInvalidCertificates: true, // ojo sólo dev
@@ -37,6 +39,7 @@ import * as passport from 'passport';
     UsersModule,
     QuotesModule,
     ClientsModule,
+    ProductsModule,
     SharedModule
   ],
   controllers: [AppController],

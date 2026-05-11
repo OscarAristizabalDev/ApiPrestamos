@@ -32,9 +32,8 @@ export class ClientsController{
     
     @Get('all')
     @Roles(ROLEACCESS.MIDACCESS)
-    async getAllClients(@Query('page') page: string, @Query('limit') limit: string){      
-        if(!page || !limit) throw new BadRequestException('Page or limit param not provided');
-        return await this.clientsService.getAllClientsPaginated({page: parseInt(page), limit: parseInt(limit)});
+    async getAllClients(@Query('page') page: string, @Query('limit') limit: string, @Query('search') search?: string){   
+        return await this.clientsService.getAllClientsPaginated({page: parseInt(page), limit: parseInt(limit), inputSearch: search});
     }
 
     @Post()
@@ -46,15 +45,14 @@ export class ClientsController{
 
     @Put()
     async updateClient(@Body() client: UpdateClientsDto){
-        if(!client) throw new BadRequestException('No Client body were found');
-        if(!client.id) throw new BadRequestException('No id found in body request');
-        const clientUpdated = await this.clientsService.updateClient(client.id, client);
+        console.info("[Controller] Received client data: ", client);
+        const clientUpdated = await this.clientsService.updateClient(client.id!, client);
+        console.info("[Controller] Client updated: ", clientUpdated);
         return ClientMapper.toDto(clientUpdated);
     }
 
     @Delete(':id')
     async deleteClient(@Param('id') idClient: string){
-        if(!idClient) throw new BadRequestException('no client id found');
         return this.clientsService.deleteClient(idClient);
     }
 }

@@ -29,7 +29,7 @@ export class ClientsRepository implements IClientRepository{
 
         const [clients, total] = await Promise.all([
             this.clientModel
-              .find(searchTerms)
+              .find({...searchTerms, active: 1})
               .populate('typeDocument', 'description')
               .skip(skip)
               .limit(take)
@@ -55,7 +55,7 @@ export class ClientsRepository implements IClientRepository{
         return client;
     }
 
-    async findClientByItem(data: FindOneClientDto): Promise<ClientDocument> {
+    async findClientByItem(data: FindOneClientDto): Promise<ClientDocument | null> {
         if(data.id !== null && data.id !== undefined) {
             const clientID = this.generateObjectId(data.id);
             const client = await this.clientModel.findById(clientID,{active: 1}).exec();
@@ -64,13 +64,21 @@ export class ClientsRepository implements IClientRepository{
         }
         const term = this.validateSearchTerms(data);
         const client = await this.clientModel.findOne({...term, active: 1}).exec();
-        if(!client) throw new NotFoundException('Client not found');
+        if(!client) return null;
         return client;
     }
 
     async updateClient(id: string, updateData: UpdateClientsDto): Promise<ClientDocument | null> {
         const objectID = this.generateObjectId(id);
-        return await this.clientModel.findByIdAndUpdate(objectID, updateData, { new: true }).exec();
+        console.info("[Repository] Update data and objectID: ", updateData, objectID);
+        /*if (updateData.typeDocument) {
+            updateData.typeDocument = this.generateObjectId(updateData.typeDocument as string);
+        }*/
+        const updatedClient = await this.clientModel.findByIdAndUpdate(objectID, updateData, { new: true })
+        .populate('typeDocument', 'description')
+        .exec();
+        console.info("[Repository] Updated client: ", updatedClient);
+        return updatedClient;
     }
 
     async deleteClient(id: string): Promise<{message:string}>{
@@ -83,6 +91,17 @@ export class ClientsRepository implements IClientRepository{
     validateSearchTerms(data: ListClientsDto | FindOneClientDto): ClientSearchTermsRaw{
         let searchTerms : ClientSearchTermsRaw = {};
 
+        if(data.inputSearch){
+            const sanitizedInputSearch = this.escapeRegExp(data.inputSearch);
+
+            if(typeof sanitizedInputSearch === 'string'){ 
+                data.fullName = sanitizedInputSearch;
+            }
+
+            if(typeof sanitizedInputSearch === 'number'){
+                data.documentNumber = sanitizedInputSearch;
+            }
+        }
         // Si se le agrega al inicio del regex el simbolo ^, esta consulta será al equivalente de
         // LIKE 'cadena%', pero si está al final el símbolo $, este equivaldrá a LIKE '%cadena'
         // por el contrario si no tiene ningún símbolo la consulta será equivalente a LIKE '%cadena%'
