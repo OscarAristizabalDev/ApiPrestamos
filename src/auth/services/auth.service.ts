@@ -35,12 +35,12 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Usuario no encontrado');
     }
-    const payload = { sub: user._id, email: user.email, role: user.role };
+    const payload = { sub: user._id, email: user.email, role: user.role, fullName: user.fullName };
     const accessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
       expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') as JwtSignOptions['expiresIn'],
     });
-    const payloadRefresh = { sub: String(user.id), email: user.email, role: user.role}
+    const payloadRefresh = { sub: String(user.id), email: user.email, role: user.role, fullName: user.fullName}
 
     const refreshToken = await this.generateRefreshToken(user, payloadRefresh, false);
 
@@ -56,13 +56,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role};
+    const payload = { sub: user.id, email: user.email, role: user.role, fullName: user.fullName};
     const newAccessToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
       expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') as JwtSignOptions['expiresIn'],
     });
 
-    const payloadRefresh = { sub: user.id, email: user.email, role: user.role}
+    const payloadRefresh = { sub: user.id, email: user.email, role: user.role, fullName: user.fullName}
 
     const newRefreshToken = await this.generateRefreshToken(user, payloadRefresh, true, idCurrentToken);
 
@@ -74,7 +74,7 @@ export class AuthService {
     };
   }
   async generateRefreshToken(user: UserDocument, payload: JwtPayload, isRefresh: boolean, idCurrentToken?: string): Promise<string>{
-    let payloadSign = {sub: payload.sub, email: payload.email, role: payload.role};
+    let payloadSign = {sub: payload.sub, email: payload.email, role: payload.role, fullName: payload.fullName};
     const refreshToken = await this.jwtService.sign(payloadSign, {
       secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
       expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRES_IN') as JwtSignOptions['expiresIn'],

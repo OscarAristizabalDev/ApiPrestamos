@@ -45,7 +45,8 @@ async function bootstrap() {
   });*/
   app.enableCors({
     origin:[
-      //'http://localhost:4200', // Frontend web
+      //'http://localhost:4200', // Frontend mobileweb
+      'http://localhost:3001', // Frontend web
       'https://sirenically-slippiest-lylah.ngrok-free.dev', // Frontend mobile - Ver docs de NGROK para uso local de expo
     ], 
     credentials: true
