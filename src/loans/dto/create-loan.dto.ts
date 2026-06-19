@@ -1,79 +1,62 @@
 import { Expose, Transform, Type } from "class-transformer";
-import { IsDateString, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min } from "class-validator";
-
-export class ListLoanDto{
-    @Type(() => Number) // convierte string del body/query en number
-    @IsInt({ message: 'La página debe ser un número entero' })
-    @Min(1, { message: 'La página debe ser mayor o igual a 1' })
-    page: number;
-
-    @Type(() => Number)
-    @IsOptional()
-    @IsInt({ message: 'El límite debe ser un número entero' })
-    @Min(1, { message: 'El límite debe ser mayor o igual a 1' })
-    limit?: number;
-}
+import { IsDateString, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min } from "class-validator";
+import { AmortizationMethod, InterestRateType, LoanStatus, PaymentFrequency } from "../enums/enums";
 
 export class CreateLoanDto {
-    @IsInt()
-    @IsNotEmpty()
-    client_id: number;
+  // 🔹 Relations
+  @IsInt()
+  @IsPositive()
+  client_id: number;
 
-    @IsNotEmpty()
-    @IsNumber({ maxDecimalPlaces: 2 })
-    @IsPositive({ message: 'El monto debe ser positivo' })
-    amount: number;
+  @IsInt()
+  @IsPositive()
+  approved_by: string;
 
-    @IsNotEmpty()
-    @IsString()
-    currency?: string = 'COP';
+  // 🔹 Core loan data
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  amount: number;
 
-    @IsNotEmpty()
-    @IsNumber({ maxDecimalPlaces: 2 })
-    @IsPositive()
-    interest_rate: number;
+  @IsString()
+  @IsOptional()
+  currency: string = 'COP';
 
-    @IsNotEmpty()
-    @IsInt()
-    @IsPositive()
-    term: number;
+  // 🔹 Interest
+  @IsNumber({ maxDecimalPlaces: 4 })
+  @IsPositive()
+  interest_rate: number; // e.g. 0.10
 
-    @IsNotEmpty()
-    @IsDateString()
-    start_date: string;
+  @IsEnum(InterestRateType)
+  interest_rate_type: InterestRateType;
 
-    @IsNotEmpty()
-    @IsDateString()
-    end_date?: string;
+  // 🔹 Term & frequency
+  @IsInt()
+  @IsPositive()
+  term: number; // number of payments
 
-    @IsNotEmpty()
-    @IsString()
-    loan_type: string;
+  @IsEnum(PaymentFrequency)
+  payment_frequency: PaymentFrequency;
 
-    @IsNotEmpty()
-    @IsInt()
-    approved_by?: string; // relación con user.id
+  // 🔹 Amortization
+  @IsEnum(AmortizationMethod)
+  amortization_method: AmortizationMethod;
 
-    @IsNotEmpty()
-    @IsString()
-    status?: string = 'active';
+  // 🔹 Dates
+  @IsDateString()
+  start_date: string;
 
-    @IsNotEmpty()
-    @IsNumber({ maxDecimalPlaces: 2 })
-    pending_amount?: number;
+  // 🔹 Classification
+  @IsString()
+  loan_type: string;
 
-    @IsNotEmpty()
-    @IsNumber({ maxDecimalPlaces: 2 })
-    total_amount?: number;
+  @IsEnum(LoanStatus)
+  @IsOptional()
+  status: LoanStatus = LoanStatus.ACTIVE;
 
-    @IsNotEmpty()
-    @IsString()
-    payment_frecuency_id?: string;
-
-    @IsNotEmpty()
-    @IsString()
-    warranty?: string;
-
+  // 🔹 Optional business rules
+  @IsString()
+  @IsOptional()
+  warranty?: string;
 }
 
 export class LoanResponseDto {
