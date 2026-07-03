@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { QuoteService } from './application/services/quote.service';
+import { CalculateQuoteService } from './application/services/calculate-quote.service';
 import { QuoteController } from './infrastructure/http/controllers/quote.controller'; 
 import { DailyExpirationStrategy } from './domain/strategies/expiration/daily-quote.strategy';
 import { WeeklyExpirationStrategy } from './domain/strategies/expiration/weekly-quotestrategy';
@@ -12,12 +12,17 @@ import { FrenchQuoteAmortization } from './domain/strategies/amortization/french
 import { GermanQuoteAmortization } from './domain/strategies/amortization/german-quote-amortization.strategy';
 import { AmericanQuoteAmortization } from './domain/strategies/amortization/american-quote-amortization.strategy';
 import { QuoteAmortizationService } from './application/services/amortization/quote-amortization.service';
+import { CALCULATE_QUOTE_USE_CASE } from './application/ports/incoming/tokens';
 
 @Module({
   controllers: [QuoteController],
   providers: [
     // Application services
-    QuoteService,
+    {
+      provide: CALCULATE_QUOTE_USE_CASE,
+      useClass: CalculateQuoteService,
+    },
+    CalculateQuoteService,
     QuoteExpirationService,
     QuoteExpirationStrategyResolver,
     QuoteAmortizationService,
@@ -32,6 +37,6 @@ import { QuoteAmortizationService } from './application/services/amortization/qu
     GermanQuoteAmortization,
     AmericanQuoteAmortization
   ],
-  exports: [QuoteService],
+  exports: [CalculateQuoteService],
 })
 export class QuotesModule {}

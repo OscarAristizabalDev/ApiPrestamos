@@ -5,9 +5,10 @@ import { QuoteExpirationService } from './expiration/quote-expiration.service';
 import { QuoteExpirationStrategyResolver } from './expiration/quote-expiration-strategy.resolver';
 import { QuoteAmortizationStrategyResolver } from './amortization/quote-amortization-strategy.resolver';
 import { QuoteAmortizationService } from './amortization/quote-amortization.service';
+import { CalculateQuoteUseCase } from '../ports/incoming/calculate-quote.use-case';
 
 @Injectable({ scope: Scope.REQUEST })
-export class QuoteService {
+export class CalculateQuoteService implements CalculateQuoteUseCase{
 
     constructor(
         private readonly expirationService: QuoteExpirationService,

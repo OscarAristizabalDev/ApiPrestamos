@@ -1,19 +1,24 @@
 import { ModuleRef } from "@nestjs/core";
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Inject, Post } from "@nestjs/common";
 
-import { QuoteService } from "src/quotes/application/services/quote.service";
-import { CalculateQuoteRequestDto } from "../dto/calculate-quote.request.dto";
 import { QuoteHttpMapper } from "../mappers/quote-http.mapper";
+import { CalculateQuoteRequestDto } from "../dto/calculate-quote.request.dto";
+import { CALCULATE_QUOTE_USE_CASE } from "src/quotes/application/ports/incoming/tokens";
+import { CalculateQuoteUseCase } from "src/quotes/application/ports/incoming/calculate-quote.use-case";
 
 @Controller('quotes')
 export class QuoteController {
 
-    constructor(private readonly quotesService: QuoteService, private readonly moduleRef: ModuleRef) { }
+    constructor(
+        @Inject(CALCULATE_QUOTE_USE_CASE)
+        private readonly useCase: CalculateQuoteUseCase, 
+        private readonly moduleRef: ModuleRef
+    ) { }
 
     @Post('calculate')
     async calculate(@Body() dto: CalculateQuoteRequestDto) {
         const command = QuoteHttpMapper.toCommand(dto);
-        const quotes = await this.quotesService.calculate(command);
+        const quotes = await this.useCase.calculate(command);
         return QuoteHttpMapper.toResponse(quotes);
     }
 }
