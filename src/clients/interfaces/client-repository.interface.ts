@@ -1,8 +1,16 @@
+import { Types } from "mongoose";
 import { CreateClientsDto, FindOneClientDto, ListClientsDto, UpdateClientsDto } from "../dtos/clients.dto";
 import { ClientDocument } from "../schemas/client.schema";
 
+/** Campos de propiedad que fija el servidor al crear (no vienen del cliente). */
+export interface ClientOwnershipFields {
+    createdBy?: Types.ObjectId | null;
+}
+
+export type CreateClientData = CreateClientsDto & ClientOwnershipFields;
+
 export interface IClientRepository{
-    create(data: CreateClientsDto): Promise<ClientDocument>;
+    create(data: CreateClientData): Promise<ClientDocument>;
     findById(id: string): Promise<ClientDocument>;
     findAll<T>(data: ListClientsDto): Promise<ClientRepositoryRaw<T>>;
     findClientByItem(data: FindOneClientDto): Promise<ClientDocument | null>;

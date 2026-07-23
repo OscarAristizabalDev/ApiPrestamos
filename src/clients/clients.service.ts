@@ -1,4 +1,5 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { Actor, canModifyOwned } from "../auth/ownership";
 import { RowFoundClientMapper } from "./mappers/clients.mapper";
 import { CreateClientsDto, FindOneClientDto, FoundClientDto, ListClientsDto, UpdateClientsDto } from "./dtos/clients.dto";
 import { TypeDocumentMapper } from "./mappers/type-document.mapper";
@@ -30,14 +31,14 @@ export class ClientsService{
         return client;
     }
 
-    async createClient(client: CreateClientsDto): Promise<ClientDocument>{
+    async createClient(client: CreateClientsDto, actor: Actor): Promise<ClientDocument>{
         const clientEmail = await this.clientsRepository.findClientByItem({email: client.email});
         const clientDocument = await this.clientsRepository.findClientByItem({documentNumber: client.documentNumber});
 
         if(clientEmail){
             throw new ConflictException('The email already exists');
         }
-        
+
         if(clientDocument){
             throw new ConflictException('Document number already exists');
         }
@@ -48,15 +49,23 @@ export class ClientsService{
 
         client.registrationDate = new Date();
 
-        return await this.clientsRepository.create(client);
+        // Propiedad: el creador es el actor.
+        return await this.clientsRepository.create({
+            ...client,
+            createdBy: new Types.ObjectId(actor.id),
+        });
     }
 
-    async updateClient(id: string, client: UpdateClientsDto): Promise<ClientDocument>{
+    async updateClient(id: string, client: UpdateClientsDto, actor: Actor): Promise<ClientDocument>{
         console.info("[Service] Updating client: ", client);
         const clientData = await this.clientsRepository.findById(id);
 
         if (!clientData?.id) {
             throw new ConflictException('Client not found');
+        }
+
+        if (!canModifyOwned(actor, clientData.createdBy?.toString())) {
+            throw new ForbiddenException('You can only modify clients you created');
         }
 
         const existingEmail = await this.clientsRepository.findClientByItem({email: client.email});
@@ -84,9 +93,12 @@ export class ClientsService{
         return updatedClient;
     }
 
-    async deleteClient(id: string){
+    async deleteClient(id: string, actor: Actor){
         const client = await this.clientsRepository.findById(id);
         if(!client) throw new NotFoundException('Client not found');
+        if (!canModifyOwned(actor, client.createdBy?.toString())) {
+            throw new ForbiddenException('You can only delete clients you created');
+        }
         if(client.active === 0) throw new ConflictException('Client already deleted');
         return await this.clientsRepository.deleteClient(id);
     }

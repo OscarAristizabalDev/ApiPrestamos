@@ -11,6 +11,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import mongodbConfig from './config/database.config';
 import * as passport from 'passport';
 import { ProductsModule } from './products/products.module';
+import { MessagesModule } from './messages/messages.module';
+import { RequestsModule } from './requests/requests.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -40,6 +42,8 @@ import { ProductsModule } from './products/products.module';
     QuotesModule,
     ClientsModule,
     ProductsModule,
+    MessagesModule,
+    RequestsModule,
     SharedModule
   ],
   controllers: [AppController],

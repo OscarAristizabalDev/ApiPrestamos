@@ -82,11 +82,16 @@ export class AuthService {
 
     const tokenhashed = crypto.createHash('sha256').update(refreshToken).digest('hex');
 
-    if(isRefresh && idCurrentToken) await this.refreshTokenRepo.updateRefreshToken(idCurrentToken, tokenhashed);
+    // Sincroniza la expiración persistida con el exp real del JWT (evita desfases
+    // entre el token y el registro en BD). Al rotar, extiende la ventana (sliding).
+    const decoded = this.jwtService.decode(refreshToken) as { exp?: number } | null;
+    const expires = decoded?.exp ? new Date(decoded.exp * 1000) : add(new Date(), { days: 7 });
+
+    if(isRefresh && idCurrentToken) await this.refreshTokenRepo.updateRefreshToken(idCurrentToken, tokenhashed, expires);
     else await this.refreshTokenRepo.saveRefreshToken({
       userID: user.id,
       token: tokenhashed,
-      expires: add(new Date(), { days: 1 }),
+      expires,
     });
 
     await this.usersService.updateRefreshToken(user.id, tokenhashed);

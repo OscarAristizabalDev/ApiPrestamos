@@ -24,11 +24,13 @@ export class RefreshTokenRepository implements IRefreshTokenRepository{
         return refreshTokenFound;
     }
 
-    async updateRefreshToken(idCurrentToken: string, token: string): Promise<RefreshTokenDocument>{
+    async updateRefreshToken(idCurrentToken: string, token: string, expires?: Date): Promise<RefreshTokenDocument>{
         let objectID;
         if(idCurrentToken !== null && idCurrentToken !== undefined) objectID = new Types.ObjectId(idCurrentToken);
         if(!Types.ObjectId.isValid(objectID)) throw new ConflictException('ID submited is not valid');
-        const refreshTokenUpdated = await this.refreshTokenModel.findByIdAndUpdate(objectID,{token}, {new: true}).exec();
+        const update: { token: string; expires?: Date } = { token };
+        if (expires) update.expires = expires; // ventana deslizante: extiende expiración al rotar
+        const refreshTokenUpdated = await this.refreshTokenModel.findByIdAndUpdate(objectID, update, {new: true}).exec();
         if(!refreshTokenUpdated) throw new NotFoundException('Refresh Token not found');
         return refreshTokenUpdated;
     }

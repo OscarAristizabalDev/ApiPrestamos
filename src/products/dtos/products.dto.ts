@@ -165,6 +165,12 @@ export class FoundProductDto {
 
     @Expose()
     readonly productType: ProductTypeDto;
+
+    @Expose()
+    readonly createdBy?: string | null;
+
+    @Expose()
+    readonly shared?: boolean;
 }
 
 export class ResponseProductDto {

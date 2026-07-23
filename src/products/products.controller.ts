@@ -11,6 +11,8 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { Roles } from "src/auth/decorators/roles.decorator";
+import { AuthUser } from "src/auth/decorators/auth-user.decorator";
+import { CurrentUserDto } from "src/auth/dto/current-user.dto";
 import { JwtAuthGuard } from "src/auth/guards/auth.guard";
 import { RolesGuard } from "src/auth/guards/roles.guard";
 import {
@@ -77,8 +79,8 @@ export class ProductsController {
     }
 
     @Get('all')
-    @Roles(ROLEACCESS.MIDACCESS)
     async getAllProducts(
+        @AuthUser() actor: CurrentUserDto,
         @Query('page') page: string,
         @Query('limit') limit: string,
         @Query('search') search?: string,
@@ -89,23 +91,23 @@ export class ProductsController {
             limit: parseInt(limit),
             inputSearch: search,
             productType
-        });
+        }, actor);
     }
 
     @Post()
-    async createProduct(@Body() productDto: CreateProductsDto) {
-        const product = await this.productsService.createProduct(productDto);
+    async createProduct(@AuthUser() actor: CurrentUserDto, @Body() productDto: CreateProductsDto) {
+        const product = await this.productsService.createProduct(productDto, actor);
         return ProductMapper.toDto(product);
     }
 
     @Put()
-    async updateProduct(@Body() data: UpdateProductsDto) {
-        const productUpdated = await this.productsService.updateProduct(data.id, data);
+    async updateProduct(@AuthUser() actor: CurrentUserDto, @Body() data: UpdateProductsDto) {
+        const productUpdated = await this.productsService.updateProduct(data.id, data, actor);
         return ProductMapper.toDto(productUpdated);
     }
 
     @Delete(':id')
-    async deleteProduct(@Param('id') id: string) {
-        return await this.productsService.deleteProduct(id);
+    async deleteProduct(@AuthUser() actor: CurrentUserDto, @Param('id') id: string) {
+        return await this.productsService.deleteProduct(id, actor);
     }
 }

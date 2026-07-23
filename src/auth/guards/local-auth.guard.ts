@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, HttpException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import * as passport from 'passport';
 import { AuthService } from '../services/auth.service';
@@ -52,7 +52,9 @@ export class LocalAuthGuard extends AuthGuard('local') {
       const result = await super.canActivate(context);
       return result as boolean;
     } catch (error) {
-      throw new UnauthorizedException('Auth Error');
+      // Preserva el mensaje real (p. ej. "Credenciales de acceso incorrectas")
+      if (error instanceof HttpException) throw error;
+      throw new UnauthorizedException('Credenciales inválidas');
     }
   }
 }

@@ -38,6 +38,7 @@ export class RowFoundClientMapper{
           creditScore: client.creditScore,
           riskCategory: client.riskCategory,
           notes: client.notes,
+          createdBy: client.createdBy ? client.createdBy.toString() : null,
         };
       }
 }

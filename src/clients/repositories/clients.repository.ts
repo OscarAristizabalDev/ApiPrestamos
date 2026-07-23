@@ -2,8 +2,8 @@ import { ConflictException, Injectable, NotFoundException, Scope } from "@nestjs
 import { Client, ClientDocument } from '../schemas/client.schema';
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
-import { ClientRepositoryRaw, ClientSearchTermsRaw, IClientRepository } from "../interfaces/client-repository.interface";
-import { CreateClientsDto, FindOneClientDto, ListClientsDto, UpdateClientsDto } from "../dtos/clients.dto";
+import { ClientRepositoryRaw, ClientSearchTermsRaw, CreateClientData, IClientRepository } from "../interfaces/client-repository.interface";
+import { FindOneClientDto, ListClientsDto, UpdateClientsDto } from "../dtos/clients.dto";
 import { ConfigService } from "@nestjs/config";
 
 
@@ -17,7 +17,7 @@ export class ClientsRepository implements IClientRepository{
         this.defaultLimit = +this.configService.get<number>('PAGINATION_LIMIT', 10);
      }
 
-    async create(data: CreateClientsDto): Promise<ClientDocument> {
+    async create(data: CreateClientData): Promise<ClientDocument> {
         const newClient = new this.clientModel(data);
         return await newClient.save();
     }
@@ -35,7 +35,7 @@ export class ClientsRepository implements IClientRepository{
               .limit(take)
               .lean()
               .exec(),
-            this.clientModel.countDocuments({}).exec()
+            this.clientModel.countDocuments({...searchTerms, active: 1}).exec()
           ]);
 
         const dataRaw : ClientRepositoryRaw<T> = {

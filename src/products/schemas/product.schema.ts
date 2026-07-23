@@ -38,6 +38,14 @@ export class Product {
     @Prop({ type: Types.ObjectId, ref: 'ProductType', required: true })
     productType: Types.ObjectId;
 
+    /** Usuario que creó el producto (dueño). Null = legado/global. */
+    @Prop({ type: Types.ObjectId, ref: 'User', default: null, index: true })
+    createdBy: Types.ObjectId | null;
+
+    /** true si lo creó un admin/superadmin → visible para todos los usuarios. */
+    @Prop({ default: false })
+    shared: boolean;
+
     @Prop({ default: 1 })
     active: number;
 }

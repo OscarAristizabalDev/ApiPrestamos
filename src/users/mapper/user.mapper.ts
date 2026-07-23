@@ -24,7 +24,8 @@ export class RowFoundUserMapper{
           phoneNumber: user.phoneNumber,
           address: user.address,
           registrationDate: user.birthdate.toISOString(),
-          role: user.role
+          role: user.role,
+          active: user.active
         };
       }
 }

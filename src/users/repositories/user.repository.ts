@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Mongoose, Types } from "mongoose";
+import { FilterQuery, Model, Types } from "mongoose";
 import { ConfigService } from "@nestjs/config";
 import { IUserRepository, UserRepositoryRaws } from "../interfaces/user.interface";
 import { User, UserDocument } from "../schemas/user.schema";
@@ -21,16 +21,19 @@ export class UserRepository implements IUserRepository{
         const take = data.limit ?? this.defaultLimit;
         const skip = (data.page - 1) * take;
 
+        // Trae todos (activos e inactivos): el panel de usuarios muestra el estado
+        // y permite reactivar. Antes forzaba `active: 1` y ocultaba los inactivos.
+        const filter: FilterQuery<UserDocument> = {};
+        if (data.terms?.email) {
+            filter.email = { $regex: this.escapeRegExp(data.terms.email), $options: 'i' };
+        }
+        if (data.terms?.fullName) {
+            filter.fullName = { $regex: this.escapeRegExp(data.terms.fullName), $options: 'i' };
+        }
+
         const [users, total] = await Promise.all([
-            this.userModel
-              .find(data.terms ? {...data.terms, fullName:{
-                $regex: data.terms.fullName,
-                $options: 'i'
-              }, active:1} : {})
-              .skip(skip)
-              .limit(take)
-              .exec(),
-            this.userModel.countDocuments(data.terms ? {...data.terms, active:1} : {}).exec()
+            this.userModel.find(filter).skip(skip).limit(take).exec(),
+            this.userModel.countDocuments(filter).exec()
           ]);
 
         const dataRaw : UserRepositoryRaws<T> = {
@@ -50,9 +53,9 @@ export class UserRepository implements IUserRepository{
         }
         if(data.email != undefined && data.email !== null) {
             const normalizedEmail = data.email.trim();
-            const userFound = await this.userModel.findOne({email: normalizedEmail, active: 1}).exec();
-            if(!userFound) throw new NotFoundException('User not found or deleted');
-            return userFound;
+            // Devuelve null si no existe (no lanzar): este método se usa como
+            // verificación de existencia en create/login. Lanzar rompía la creación.
+            return await this.userModel.findOne({email: normalizedEmail, active: 1}).exec();
         }
         return null;
     }
@@ -65,7 +68,7 @@ export class UserRepository implements IUserRepository{
     async update(id: string, data: UpdateUserDto): Promise<UserDocument | null> {
         const userID = this.generateObjectId(id);        
         if(data.email){
-            const emailExists = await this.userModel.findOne({email: data.email}).exec();
+            const emailExists = await this.userModel.findOne({email: data.email, _id: {$ne: userID}}).exec();
             if(emailExists) throw new ConflictException('Email already exists');
         }
         const updatedUser =  await this.userModel.findByIdAndUpdate(userID, {...data}, {new:true}).exec();
@@ -85,6 +88,10 @@ export class UserRepository implements IUserRepository{
         const userRefreshTokenUpdated = await this.userModel.findByIdAndUpdate(userID,{refreshToken: token}, {new: true}).exec();
         if(!userRefreshTokenUpdated) throw new NotFoundException('User not found so no token were updated');
         return userRefreshTokenUpdated;
+    }
+
+    private escapeRegExp(text: string): string {
+        return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     private generateObjectId(id:string):Types.ObjectId{

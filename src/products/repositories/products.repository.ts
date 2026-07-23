@@ -2,8 +2,9 @@ import { ConflictException, Injectable, NotFoundException, Scope } from "@nestjs
 import { InjectModel } from "@nestjs/mongoose";
 import { ConfigService } from "@nestjs/config";
 import { FilterQuery, Model, Types } from "mongoose";
-import { CreateProductsDto, FindOneProductDto, ListProductsDto, UpdateProductsDto } from "../dtos/products.dto";
-import { ProductRepositoryRaw, IProductRepository } from "../interfaces/product-repository.interface";
+import { Actor, ROLE } from "../../auth/ownership";
+import { FindOneProductDto, ListProductsDto, UpdateProductsDto } from "../dtos/products.dto";
+import { CreateProductData, ProductRepositoryRaw, IProductRepository } from "../interfaces/product-repository.interface";
 import { Product, ProductDocument } from "../schemas/product.schema";
 
 @Injectable({ scope: Scope.REQUEST })
@@ -17,12 +18,12 @@ export class ProductsRepository implements IProductRepository {
         this.defaultLimit = +this.configService.get<number>('PAGINATION_LIMIT', 10);
     }
 
-    async create(data: CreateProductsDto): Promise<ProductDocument> {
+    async create(data: CreateProductData): Promise<ProductDocument> {
         const newProduct = new this.productModel(data);
         return await newProduct.save();
     }
 
-    async findAll<T = ProductDocument>(data: ListProductsDto): Promise<ProductRepositoryRaw<T>> {
+    async findAll<T = ProductDocument>(data: ListProductsDto, actor?: Actor): Promise<ProductRepositoryRaw<T>> {
         const take = data.limit ?? this.defaultLimit;
         const skip = (data.page - 1) * take;
         const searchTerms = this.validateSearchTerms(data);
@@ -31,7 +32,17 @@ export class ProductsRepository implements IProductRepository {
             searchTerms.productType = this.generateObjectId(data.productType);
         }
 
-        const query = { ...searchTerms, active: 1 };
+        let query: FilterQuery<ProductDocument> = { ...searchTerms, active: 1 };
+
+        // Rol `user`: solo ve sus productos + los compartidos (creados por admin/superadmin).
+        if (actor && actor.role === ROLE.USER) {
+            query = {
+                $and: [
+                    query,
+                    { $or: [{ createdBy: new Types.ObjectId(actor.id) }, { shared: true }] },
+                ],
+            };
+        }
 
         const [products, total] = await Promise.all([
             this.productModel

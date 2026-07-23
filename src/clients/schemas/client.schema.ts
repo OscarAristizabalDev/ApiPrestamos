@@ -53,6 +53,10 @@ export class Client {
     @Prop()
     notes: string;
 
+    /** Usuario que creó el cliente (dueño). Null = legado/global. */
+    @Prop({ type: Types.ObjectId, ref: 'User', default: null, index: true })
+    createdBy: Types.ObjectId | null;
+
     @Prop()
     active: number;
 }

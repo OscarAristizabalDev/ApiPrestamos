@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { IsDate, IsEmail, IsInt, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, Length, Min } from "class-validator";
+import { IsDate, IsEmail, IsInt, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, Length, Max, Min } from "class-validator";
 import { Types } from "mongoose";
 
 export class SearchTerms{
@@ -159,6 +159,16 @@ export class FoundUserDto{
     readonly registrationDate: string;
     @Expose()
     readonly role: string;
+    @Expose()
+    readonly active: number;
+}
+
+export class UpdateUserStatusDto {
+    @IsNotEmpty()
+    @IsInt()
+    @Min(0)
+    @Max(1)
+    active: number;
 }
 
 export class AuthResponseDto {

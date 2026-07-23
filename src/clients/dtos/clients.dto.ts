@@ -187,6 +187,8 @@ export class FoundClientDto {
     readonly riskCategory: string;
     @Expose()
     readonly notes: string;
+    @Expose()
+    readonly createdBy?: string | null;
 }
 
 export class UpdateClientsDto extends PartialType(

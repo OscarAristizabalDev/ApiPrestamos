@@ -1,5 +1,6 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { Types } from "mongoose";
+import { Actor, canModifyOwned, isElevated } from "../auth/ownership";
 import {
     CreateProductTypeDto,
     FindOneProductTypeDto,
@@ -23,8 +24,8 @@ export class ProductsService {
         private readonly productTypeRepository: IProductTypeRepository
     ) {}
 
-    async getAllProductsPaginated(data: ListProductsDto): Promise<ProductRepositoryRaw<FoundProductDto>> {
-        const dataRawProducts: ProductRepositoryRaw<FoundProductDto> = await this.productsRepository.findAll(data);
+    async getAllProductsPaginated(data: ListProductsDto, actor?: Actor): Promise<ProductRepositoryRaw<FoundProductDto>> {
+        const dataRawProducts: ProductRepositoryRaw<FoundProductDto> = await this.productsRepository.findAll(data, actor);
         dataRawProducts.data = dataRawProducts.data.map((product) =>
             RowFoundProductMapper.toDto(product as unknown as ProductDocument)
         );
@@ -41,7 +42,7 @@ export class ProductsService {
         return product;
     }
 
-    async createProduct(data: CreateProductsDto): Promise<ProductDocument> {
+    async createProduct(data: CreateProductsDto, actor: Actor): Promise<ProductDocument> {
         const [existingCode, productType] = await Promise.all([
             this.productsRepository.findProductByItem({ code: data.code }),
             this.productTypeRepository.findById(data.productType as string)
@@ -75,14 +76,23 @@ export class ProductsService {
             data.active = 1;
         }
 
-        return await this.productsRepository.create(data);
+        // Propiedad: el creador es el actor; si es admin/superadmin, el producto es compartido.
+        return await this.productsRepository.create({
+            ...data,
+            createdBy: new Types.ObjectId(actor.id),
+            shared: isElevated(actor.role),
+        });
     }
 
-    async updateProduct(id: string, data: UpdateProductsDto): Promise<ProductDocument> {
+    async updateProduct(id: string, data: UpdateProductsDto, actor: Actor): Promise<ProductDocument> {
         const productData = await this.productsRepository.findById(id);
 
         if (!productData?.id) {
             throw new NotFoundException('Product not found');
+        }
+
+        if (!canModifyOwned(actor, productData.createdBy?.toString())) {
+            throw new ForbiddenException('You can only modify products you created');
         }
 
         if (data.code) {
@@ -136,11 +146,15 @@ export class ProductsService {
         return productUpdated;
     }
 
-    async deleteProduct(id: string): Promise<{ message: string }> {
+    async deleteProduct(id: string, actor: Actor): Promise<{ message: string }> {
         const product = await this.productsRepository.findById(id);
 
         if (!product) {
             throw new NotFoundException('Product not found');
+        }
+
+        if (!canModifyOwned(actor, product.createdBy?.toString())) {
+            throw new ForbiddenException('You can only delete products you created');
         }
 
         if (product.active === 0) {

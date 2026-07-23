@@ -3,7 +3,7 @@ import { RefreshTokenDocument } from "../schemas/refresh-token.schema";
 export interface IRefreshTokenRepository{
     saveRefreshToken(data: RefreshTokenInterface): Promise<RefreshTokenDocument>;
     findRefreshToken(userID: string, token: string): Promise<RefreshTokenDocument | null>;
-    updateRefreshToken(id: string,token: string): Promise<RefreshTokenDocument>;
+    updateRefreshToken(id: string, token: string, expires?: Date): Promise<RefreshTokenDocument>;
     revokeToken(token: string):Promise<{message: string}>;
 }
 

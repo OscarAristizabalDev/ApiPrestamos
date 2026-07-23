@@ -30,7 +30,9 @@ export class RowFoundProductMapper {
             brand: product.brand,
             model: product.model,
             imageUrls: product.imageUrls,
-            productType: ProductTypeMapper.toDto(productTypeRaw)
+            productType: ProductTypeMapper.toDto(productTypeRaw),
+            createdBy: product.createdBy ? product.createdBy.toString() : null,
+            shared: product.shared
         };
     }
 }

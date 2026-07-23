@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Delete, Put, UseGuards, Query, BadRequestException } from '@nestjs/common';
 import { UserService } from './users.service';
-import { CreateUserDto, FoundUserDto, ListUsersDto, SearchTerms, UpdateUserDto, UserResponseDto } from './dto/users.dto';
+import { CreateUserDto, FoundUserDto, ListUsersDto, SearchTerms, UpdateUserDto, UpdateUserStatusDto, UserResponseDto } from './dto/users.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/auth.guard';
 import { UserMapper } from './mapper/user.mapper';
@@ -47,7 +47,17 @@ export class UserController {
         return userUpdated ? UserMapper.toDto(userUpdated) : null;
     }
     
-    @Delete(':id')    
+    @Put(':id/status')
+    @Roles(ROLEACCESS.MIDACCESS)
+    async setStatus(
+        @Param('id') id: string,
+        @Body() dto: UpdateUserStatusDto,
+    ): Promise<Partial<UserResponseDto> | null> {
+        const updated = await this.userService.setActive(id, dto.active);
+        return updated ? UserMapper.toDto(updated) : null;
+    }
+
+    @Delete(':id')
     async delete(@Param('id') id: string): Promise<string> {
         if(!id) throw new BadRequestException('no id data found');
         const userDeleted = await this.userService.delete(id);

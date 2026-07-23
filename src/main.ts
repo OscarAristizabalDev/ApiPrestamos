@@ -1,6 +1,14 @@
 import 'reflect-metadata';
-//import { setServers } from 'node:dns';
-//setServers(['8.8.8.8', '1.1.1.1']);
+import { setServers } from 'node:dns';
+// Fix para `querySrv ECONNREFUSED` al resolver los SRV de `mongodb+srv://`
+// cuando el DNS del sistema local tiene una entrada inválida (p. ej. Tailscale).
+// En producción se usa el DNS nativo del entorno (no forzamos nada), salvo que
+// se defina DNS_SERVERS explícitamente.
+if (process.env.DNS_SERVERS) {
+  setServers(process.env.DNS_SERVERS.split(',').map((s) => s.trim()));
+} else if (process.env.NODE_ENV !== 'production') {
+  setServers(['8.8.8.8', '1.1.1.1']);
+}
 import { NestFactory } from '@nestjs/core';
 import cookie from '@fastify/cookie';
 import {
@@ -58,16 +66,18 @@ async function bootstrap() {
     transform: true // convierte a tipos declarados en Dto (ej: string -> number)
   }))
 
-  // Configuracino Swagger
-  const configSawgger = new DocumentBuilder()
-  .setTitle('API Auth JWT Refresh')
-  .setDescription('Documentación para la autenticación con JWT y Refresh Tokens')
-  .setVersion('1.0')
-  .addCookieAuth('refreshToken')
-  .build();
+  // Swagger: solo fuera de producción (evita exponer el esquema de la API públicamente)
+  if (process.env.NODE_ENV !== 'production') {
+    const configSawgger = new DocumentBuilder()
+      .setTitle('API Auth JWT Refresh')
+      .setDescription('Documentación para la autenticación con JWT y Refresh Tokens')
+      .setVersion('1.0')
+      .addCookieAuth('refreshToken')
+      .build();
 
-  const document = SwaggerModule.createDocument(app, configSawgger);
-  SwaggerModule.setup('api', app, document);
+    const document = SwaggerModule.createDocument(app, configSawgger);
+    SwaggerModule.setup('api', app, document);
+  }
 
   const port = configService.get<number>('PORT') || 3000;
   

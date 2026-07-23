@@ -1,11 +1,11 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
-import { Roles } from "src/auth/decorators/roles.decorator";
+import { AuthUser } from "src/auth/decorators/auth-user.decorator";
+import { CurrentUserDto } from "src/auth/dto/current-user.dto";
 import { JwtAuthGuard } from "src/auth/guards/auth.guard";
 import { RolesGuard } from "src/auth/guards/roles.guard";
 import { CreateClientsDto, FindOneClientDto, UpdateClientsDto } from "./dtos/clients.dto";
 import { ClientsService } from "./clients.service";
 import { ClientMapper, RowFoundClientMapper } from "./mappers/clients.mapper";
-import { ROLEACCESS } from "./interfaces/client-repository.interface";
 
 @Controller('clients')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -31,28 +31,25 @@ export class ClientsController{
     }
     
     @Get('all')
-    @Roles(ROLEACCESS.MIDACCESS)
-    async getAllClients(@Query('page') page: string, @Query('limit') limit: string, @Query('search') search?: string){   
+    async getAllClients(@Query('page') page: string, @Query('limit') limit: string, @Query('search') search?: string){
         return await this.clientsService.getAllClientsPaginated({page: parseInt(page), limit: parseInt(limit), inputSearch: search});
     }
 
     @Post()
-    async createClient(@Body() clientDto: CreateClientsDto){
+    async createClient(@AuthUser() actor: CurrentUserDto, @Body() clientDto: CreateClientsDto){
         if(!clientDto) throw new BadRequestException('No data found');
-        const client = await this.clientsService.createClient(clientDto);
+        const client = await this.clientsService.createClient(clientDto, actor);
         return ClientMapper.toDto(client);
     }
 
     @Put()
-    async updateClient(@Body() client: UpdateClientsDto){
-        console.info("[Controller] Received client data: ", client);
-        const clientUpdated = await this.clientsService.updateClient(client.id!, client);
-        console.info("[Controller] Client updated: ", clientUpdated);
+    async updateClient(@AuthUser() actor: CurrentUserDto, @Body() client: UpdateClientsDto){
+        const clientUpdated = await this.clientsService.updateClient(client.id!, client, actor);
         return ClientMapper.toDto(clientUpdated);
     }
 
     @Delete(':id')
-    async deleteClient(@Param('id') idClient: string){
-        return this.clientsService.deleteClient(idClient);
+    async deleteClient(@AuthUser() actor: CurrentUserDto, @Param('id') idClient: string){
+        return this.clientsService.deleteClient(idClient, actor);
     }
 }

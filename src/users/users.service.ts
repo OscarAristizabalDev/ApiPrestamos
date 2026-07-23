@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable } from "@nestjs/common";
+import { ConflictException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { IUserRepository, UserRepositoryRaws } from "./interfaces/user.interface";
 import { CreateUserDto, FoundUserDto, ListUsersDto, SearchTerms, UpdateUserDto } from "./dto/users.dto";
@@ -40,13 +40,24 @@ export class UserService {
         return userCreated; 
     }
 
-    async update(id: string, user: UpdateUserDto): Promise<UserDocument | null> {        
+    async update(id: string, user: UpdateUserDto): Promise<UserDocument | null> {
+        if (user.password) {
+            user.password = await bcrypt.hash(user.password, 10);
+        }
         return await this.userRepository.update(id, user);
     }
     
     async delete(id: string): Promise<string> {
         return await this.userRepository.delete(id);
-    }   
+    }
+
+    /** Cambia el estado activo/inactivo. 404 si no existe, 409 si ya está en ese estado. */
+    async setActive(id: string, active: number): Promise<UserDocument | null> {
+        const user = await this.userRepository.findOne({ id });
+        if (!user) throw new NotFoundException('User not found');
+        if (user.active === active) throw new ConflictException('User status is already set');
+        return await this.userRepository.update(id, { active } as UpdateUserDto);
+    }
 
     async updateRefreshToken(userId: string, token: string) {
         await this.userRepository.updateUserRefreshToken(userId, token);
