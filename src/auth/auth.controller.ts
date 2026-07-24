@@ -73,7 +73,9 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return { accessToken: tokens.accessToken };
+    // Devuelve también el nuevo refreshToken en el body (como el login): el Web
+    // (BFF) lo necesita para rotar su cookie httpOnly; no consume la cookie de la API.
+    return { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
   }
 
   @UseGuards(AuthGuard('jwt'))
