@@ -1,6 +1,6 @@
 import { plainToInstance } from "class-transformer";
-import { LoanRaw } from "../interfaces/loan-raw.interface";
-import { LoanResponseDto } from "../dto/create-loan.dto";
+import { LoanRaw } from "../../interfaces/loan-raw.interface";
+import { LoanResponseDto } from "../../dto/create-loan.dto";
 
 export class LoanMapper {
     static toDto(loan: any) {

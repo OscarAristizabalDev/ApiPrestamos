@@ -2,7 +2,7 @@ import { ConflictException, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { LoanMapperRaw } from "./mappers/loans.mapper";
+import { LoanMapperRaw } from "./infrastructure/mappers/loans.mapper";
 import { CreateLoanDto } from "./dto/create-loan.dto";
 
 @Injectable()

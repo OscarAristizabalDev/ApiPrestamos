@@ -25,7 +25,7 @@ import { ProductMapper, RowFoundProductMapper } from "./mappers/products.mapper"
 import { ProductsService } from "./products.service";
 
 @Controller('products')
-@UseGuards(JwtAuthGuard, RolesGuard)
+// @UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductsController {
     constructor(private readonly productsService: ProductsService) {}
 

@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { LoansController } from "./loans.controller";
 import { LoansService } from "./loans.service";
+import { LoansController } from "./infrastructure/http/controllers/loan.controller";
 
 @Module({
     imports: [],

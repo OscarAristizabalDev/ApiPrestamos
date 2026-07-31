@@ -8,7 +8,7 @@ import { ClientMapper, RowFoundClientMapper } from "./mappers/clients.mapper";
 import { ROLEACCESS } from "./interfaces/client-repository.interface";
 
 @Controller('clients')
-@UseGuards(JwtAuthGuard, RolesGuard)
+// @UseGuards(JwtAuthGuard, RolesGuard)
 export class ClientsController{
 
     constructor(private readonly clientsService: ClientsService){}
@@ -31,7 +31,7 @@ export class ClientsController{
     }
     
     @Get('all')
-    @Roles(ROLEACCESS.MIDACCESS)
+    // @Roles(ROLEACCESS.MIDACCESS)
     async getAllClients(@Query('page') page: string, @Query('limit') limit: string, @Query('search') search?: string){   
         return await this.clientsService.getAllClientsPaginated({page: parseInt(page), limit: parseInt(limit), inputSearch: search});
     }
