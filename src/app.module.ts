@@ -13,6 +13,7 @@ import * as passport from 'passport';
 import { ProductsModule } from './products/products.module';
 import { MessagesModule } from './messages/messages.module';
 import { RequestsModule } from './requests/requests.module';
+import { LoansModule } from './loans/loans.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -44,6 +45,7 @@ import { RequestsModule } from './requests/requests.module';
     ProductsModule,
     MessagesModule,
     RequestsModule,
+    LoansModule,
     SharedModule
   ],
   controllers: [AppController],

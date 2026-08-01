@@ -1,0 +1,1 @@
+export const LOAN_REPOSITORY = 'LOAN_REPOSITORY';
