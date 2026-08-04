@@ -37,6 +37,6 @@ import { CALCULATE_QUOTE_USE_CASE } from './application/ports/incoming/tokens';
     GermanQuoteAmortization,
     AmericanQuoteAmortization
   ],
-  exports: [CalculateQuoteService],
+  exports: [CALCULATE_QUOTE_USE_CASE],
 })
 export class QuotesModule {}

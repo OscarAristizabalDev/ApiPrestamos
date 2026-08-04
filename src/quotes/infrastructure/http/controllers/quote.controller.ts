@@ -11,8 +11,7 @@ export class QuoteController {
 
     constructor(
         @Inject(CALCULATE_QUOTE_USE_CASE)
-        private readonly useCase: CalculateQuoteUseCase, 
-        private readonly moduleRef: ModuleRef
+        private readonly useCase: CalculateQuoteUseCase
     ) { }
 
     @Post('calculate')
