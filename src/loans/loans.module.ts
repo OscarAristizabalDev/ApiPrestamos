@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ClientsModule } from 'src/clients/clients.module';
 import { LoanController } from './infrastructure/http/controllers/loan.controller';
 import { LoanSchema, LoanSchemaClass } from './infrastructure/persistence/mongo/schemas/loan.schema';
+import { ClientLookupSchema, ClientLookupSchemaClass } from './infrastructure/persistence/mongo/schemas/client-lookup.schema';
 import { LoanRepository } from './infrastructure/persistence/mongo/loan.repository';
 import { CreateLoanService } from './application/services/create-loan.service';
 import { ListLoansService } from './application/services/list-loans.service';
@@ -11,8 +11,10 @@ import { LOAN_REPOSITORY } from './application/ports/outgoing/tokens';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: LoanSchemaClass.name, schema: LoanSchema }]),
-    ClientsModule,
+    MongooseModule.forFeature([
+      { name: LoanSchemaClass.name, schema: LoanSchema },
+      { name: ClientLookupSchemaClass.name, schema: ClientLookupSchema },
+    ]),
   ],
   controllers: [LoanController],
   providers: [
