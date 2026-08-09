@@ -20,6 +20,14 @@ export class CreateLoanService implements CreateLoanUseCase {
             throw new ConflictException('El Cliente no existe');
         }
 
+        if (command.productId) {
+            const productExists = await this.loanRepository.productExists(command.productId);
+
+            if (!productExists) {
+                throw new ConflictException('El Producto no existe');
+            }
+        }
+
         return this.loanRepository.create(command);
     }
 }

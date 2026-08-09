@@ -6,6 +6,7 @@ import { CreateLoanCommand } from 'src/loans/application/commands/create-loan.co
 import { LoanRepositoryPort, PaginatedLoans } from 'src/loans/application/ports/outgoing/loan-repository.port';
 import { LoanDocument, LoanSchemaClass } from './schemas/loan.schema';
 import { ClientLookupDocument, ClientLookupSchemaClass } from './schemas/client-lookup.schema';
+import { ProductLookupDocument, ProductLookupSchemaClass } from './schemas/product-lookup.schema';
 
 // Shape of `client`/`approvedBy` once populated by Mongoose; kept local to avoid depending on other modules' schemas.
 interface PopulatedParty {
@@ -21,6 +22,7 @@ export class LoanRepository implements LoanRepositoryPort {
     constructor(
         @InjectModel(LoanSchemaClass.name) private readonly loanModel: Model<LoanDocument>,
         @InjectModel(ClientLookupSchemaClass.name) private readonly clientModel: Model<ClientLookupDocument>,
+        @InjectModel(ProductLookupSchemaClass.name) private readonly productModel: Model<ProductLookupDocument>,
     ) {}
 
     async clientExists(clientId: string): Promise<boolean> {
@@ -29,20 +31,28 @@ export class LoanRepository implements LoanRepositoryPort {
         return !!client;
     }
 
+    async productExists(productId: string): Promise<boolean> {
+        if (!Types.ObjectId.isValid(productId)) return false;
+        const product = await this.productModel.exists({ _id: productId, active: 1 });
+        return !!product;
+    }
+
     async create(command: CreateLoanCommand): Promise<Loan> {
         const created = await this.loanModel.create({
             client: new Types.ObjectId(command.clientId),
+            customerSnapshot: command.customerSnapshot,
             approvedBy: new Types.ObjectId(command.approvedBy),
+            product: command.productId ? new Types.ObjectId(command.productId) : null,
+            productSnapshot: command.productSnapshot,
             amount: command.amount,
             currency: command.currency,
             interestRate: command.interestRate,
-            interestRateType: command.interestRateType,
-            term: command.term,
-            paymentFrequency: command.paymentFrequency,
-            amortizationMethod: command.amortizationMethod,
-            startDate: new Date(command.startDate),
             loanType: command.loanType,
-            warranty: command.warranty,
+            startDate: new Date(command.startDate),
+            frequency: command.frequency,
+            numberQuotes: command.numberQuotes,
+            amortization: command.amortization,
+            quotes: command.quotes,
         });
 
         const populated = await created.populate([
@@ -86,16 +96,18 @@ export class LoanRepository implements LoanRepositoryPort {
             amount: loan.amount,
             currency: loan.currency,
             interestRate: loan.interestRate,
-            interestRateType: loan.interestRateType,
-            term: loan.term,
-            paymentFrequency: loan.paymentFrequency,
-            amortizationMethod: loan.amortizationMethod,
-            startDate: loan.startDate,
             loanType: loan.loanType,
+            startDate: loan.startDate,
+            frequency: loan.frequency,
+            numberQuotes: loan.numberQuotes,
+            amortization: loan.amortization,
+            quotes: loan.quotes,
             status: loan.status,
-            warranty: loan.warranty,
             createdAt: (loan as any).createdAt,
             client: this.toParty(client),
+            customerSnapshot: loan.customerSnapshot,
+            productId: loan.product ? loan.product.toString() : null,
+            productSnapshot: loan.productSnapshot ?? null,
             approvedBy: this.toParty(approvedBy),
         };
     }

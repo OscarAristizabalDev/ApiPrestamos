@@ -1,7 +1,10 @@
-import { LoanAmortizationMethod } from '../enums/loan-amortization-method.enum';
-import { LoanInterestRateType } from '../enums/loan-interest-rate-type.enum';
-import { LoanPaymentFrequency } from '../enums/loan-payment-frequency.enum';
+import { QuoteFrequency } from 'src/quotes/domain/enums/quote-frequency.enum';
+import { QuoteAmortization } from 'src/quotes/domain/enums/quote-amortization.enum';
+import { Quote } from 'src/quotes/domain/entities/quote.entity';
 import { LoanStatus } from '../enums/loan-status.enum';
+import { LoanType } from '../enums/loan-type.enum';
+import { CustomerSnapshot } from './customer-snapshot.entity';
+import { ProductSnapshot } from './product-snapshot.entity';
 
 export class LoanParty {
     id: string;
@@ -15,15 +18,17 @@ export class Loan {
     amount: number;
     currency: string;
     interestRate: number;
-    interestRateType: LoanInterestRateType;
-    term: number;
-    paymentFrequency: LoanPaymentFrequency;
-    amortizationMethod: LoanAmortizationMethod;
+    loanType: LoanType;
     startDate: Date;
-    loanType: string;
+    frequency: QuoteFrequency;
+    numberQuotes: number;
+    amortization: QuoteAmortization;
+    quotes: Quote[];
     status: LoanStatus;
-    warranty?: string;
     client: LoanParty | null;
+    customerSnapshot: CustomerSnapshot;
+    productId: string | null;
+    productSnapshot: ProductSnapshot | null;
     approvedBy: LoanParty | null;
     createdAt?: Date;
 }
