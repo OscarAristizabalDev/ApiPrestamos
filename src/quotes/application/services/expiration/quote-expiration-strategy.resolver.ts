@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { QuoteFrequency } from "src/quotes/domain/enums/quote-frequency.enum";
 import { DailyExpirationStrategy } from "src/quotes/domain/strategies/expiration/daily-quote.strategy";
-import { FortnightlyExpirationStrategy } from "src/quotes/domain/strategies/expiration/fortnightly-quote.strategy";
+import { ByweeklyExpirationStrategy } from "src/quotes/domain/strategies/expiration/byweekly-quote.strategy";
 import { MonthlyExpirationStrategy } from "src/quotes/domain/strategies/expiration/monthly-quote.strategy";
 import { QuoteExpirationStrategy } from "src/quotes/domain/strategies/expiration/quote-expiration-strategy.interface";
 import { WeeklyExpirationStrategy } from "src/quotes/domain/strategies/expiration/weekly-quotestrategy";
@@ -13,7 +13,7 @@ export class QuoteExpirationStrategyResolver {
   constructor(
     private readonly daily: DailyExpirationStrategy,
     private readonly weekly: WeeklyExpirationStrategy,
-    private readonly fortnight: FortnightlyExpirationStrategy,
+    private readonly byweekly: ByweeklyExpirationStrategy,
     private readonly monthly: MonthlyExpirationStrategy,
   ) {}
 
@@ -24,7 +24,7 @@ export class QuoteExpirationStrategyResolver {
       case QuoteFrequency.WEEKLY:
         return this.weekly;
       case QuoteFrequency.FORTNIGHTLY:
-        return this.fortnight
+        return this.byweekly
       case QuoteFrequency.MONTHLY:
         return this.monthly;
       default:

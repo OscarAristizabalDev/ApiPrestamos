@@ -1,6 +1,6 @@
 import { QuoteExpirationStrategy } from "./quote-expiration-strategy.interface";
 
-export class FortnightlyExpirationStrategy implements QuoteExpirationStrategy {
+export class ByweeklyExpirationStrategy implements QuoteExpirationStrategy {
 
     async calculate(startDate: Date, quoteIndex: number): Promise<Date> {
         const newDate = new Date(startDate);

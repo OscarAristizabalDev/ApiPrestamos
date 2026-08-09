@@ -5,7 +5,7 @@ import { DailyExpirationStrategy } from './domain/strategies/expiration/daily-qu
 import { WeeklyExpirationStrategy } from './domain/strategies/expiration/weekly-quotestrategy';
 import { MonthlyExpirationStrategy, } from './domain/strategies/expiration/monthly-quote.strategy';
 import { QuoteExpirationService } from './application/services/expiration/quote-expiration.service';
-import { FortnightlyExpirationStrategy } from './domain/strategies/expiration/fortnightly-quote.strategy';
+import { ByweeklyExpirationStrategy } from './domain/strategies/expiration/byweekly-quote.strategy';
 import { QuoteExpirationStrategyResolver } from './application/services/expiration/quote-expiration-strategy.resolver';
 import { QuoteAmortizationStrategyResolver } from './application/services/amortization/quote-amortization-strategy.resolver';
 import { FrenchQuoteAmortization } from './domain/strategies/amortization/french-quote-amortization.strategy';
@@ -31,7 +31,7 @@ import { CALCULATE_QUOTE_USE_CASE } from './application/ports/incoming/tokens';
     // Domain strategies (DI-managed)
     DailyExpirationStrategy,
     WeeklyExpirationStrategy,
-    FortnightlyExpirationStrategy,
+    ByweeklyExpirationStrategy,
     MonthlyExpirationStrategy,
     FrenchQuoteAmortization,
     GermanQuoteAmortization,
