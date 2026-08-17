@@ -33,7 +33,7 @@ export class LoanHttpMapper {
     }
 
     static toListCommand(dto: ListLoanRequestDto): ListLoansCommand {
-        return new ListLoansCommand(dto.page, dto.limit);
+        return new ListLoansCommand(dto.page, dto.limit, dto.search);
     }
 
     static toResponse(loan: Loan): LoanResponseDto {

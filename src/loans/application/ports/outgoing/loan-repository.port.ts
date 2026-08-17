@@ -11,7 +11,7 @@ export interface PaginatedLoans {
 
 export interface LoanRepositoryPort {
     create(command: CreateLoanCommand): Promise<Loan>;
-    findPaginated(page: number, limit: number): Promise<PaginatedLoans>;
+    findPaginated(page: number, limit: number, search?: string): Promise<PaginatedLoans>;
     clientExists(clientId: string): Promise<boolean>;
     productExists(productId: string): Promise<boolean>;
 }

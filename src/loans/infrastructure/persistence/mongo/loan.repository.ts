@@ -63,19 +63,20 @@ export class LoanRepository implements LoanRepositoryPort {
         return this.toDomain(populated);
     }
 
-    async findPaginated(page: number, limit: number): Promise<PaginatedLoans> {
+    async findPaginated(page: number, limit: number, search?: string): Promise<PaginatedLoans> {
         const skip = (page - 1) * limit;
+        const filter = this.buildSearchFilter(search);
 
         const [loans, total] = await Promise.all([
             this.loanModel
-                .find()
+                .find(filter)
                 .populate('client', 'fullName email documentNumber')
                 .populate('approvedBy', 'fullName email')
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
                 .exec(),
-            this.loanModel.countDocuments().exec(),
+            this.loanModel.countDocuments(filter).exec(),
         ]);
 
         return {
@@ -85,6 +86,22 @@ export class LoanRepository implements LoanRepositoryPort {
             limit,
             totalPages: Math.ceil(total / limit),
         };
+    }
+
+    private buildSearchFilter(search?: string): Record<string, unknown> {
+        if (!search) return {};
+
+        const sanitized = this.escapeRegExp(search);
+        return {
+            $or: [
+                { 'customerSnapshot.fullName': { $regex: sanitized, $options: 'i' } },
+                { 'customerSnapshot.documentNumber': { $regex: sanitized, $options: 'i' } },
+            ],
+        };
+    }
+
+    private escapeRegExp(text: string): string {
+        return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     private toDomain(loan: LoanDocument): Loan {

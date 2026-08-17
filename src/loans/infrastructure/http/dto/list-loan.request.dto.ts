@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class ListLoanRequestDto {
     @Type(() => Number)
@@ -12,4 +12,8 @@ export class ListLoanRequestDto {
     @IsInt({ message: 'El límite debe ser un número entero' })
     @Min(1, { message: 'El límite debe ser mayor o igual a 1' })
     limit?: number;
+
+    @IsOptional()
+    @IsString({ message: 'El texto de búsqueda debe ser una cadena' })
+    search?: string;
 }

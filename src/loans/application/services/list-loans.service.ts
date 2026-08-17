@@ -20,6 +20,6 @@ export class ListLoansService implements ListLoansUseCase {
 
     async list(command: ListLoansCommand): Promise<PaginatedLoans> {
         const limit = command.limit ?? this.defaultLimit;
-        return this.loanRepository.findPaginated(command.page, limit);
+        return this.loanRepository.findPaginated(command.page, limit, command.search);
     }
 }
