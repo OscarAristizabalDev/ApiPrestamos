@@ -7,14 +7,7 @@ import { LoanRepositoryPort, PaginatedLoans } from 'src/loans/application/ports/
 import { LoanDocument, LoanSchemaClass } from './schemas/loan.schema';
 import { ClientLookupDocument, ClientLookupSchemaClass } from './schemas/client-lookup.schema';
 import { ProductLookupDocument, ProductLookupSchemaClass } from './schemas/product-lookup.schema';
-
-// Shape of `client`/`approvedBy` once populated by Mongoose; kept local to avoid depending on other modules' schemas.
-interface PopulatedParty {
-    _id: Types.ObjectId;
-    fullName: string;
-    email?: string;
-    documentNumber?: string;
-}
+import { LoanPersistenceMapper } from './mappers/loan-persistence.mapper';
 
 @Injectable()
 export class LoanRepository implements LoanRepositoryPort {
@@ -38,29 +31,14 @@ export class LoanRepository implements LoanRepositoryPort {
     }
 
     async create(command: CreateLoanCommand): Promise<Loan> {
-        const created = await this.loanModel.create({
-            client: new Types.ObjectId(command.clientId),
-            customerSnapshot: command.customerSnapshot,
-            approvedBy: new Types.ObjectId(command.approvedBy),
-            product: command.productId ? new Types.ObjectId(command.productId) : null,
-            productSnapshot: command.productSnapshot,
-            amount: command.amount,
-            currency: command.currency,
-            interestRate: command.interestRate,
-            loanType: command.loanType,
-            startDate: new Date(command.startDate),
-            frequency: command.frequency,
-            numberQuotes: command.numberQuotes,
-            amortization: command.amortization,
-            quotes: command.quotes,
-        });
+        const created = await this.loanModel.create(LoanPersistenceMapper.toCreateDoc(command));
 
         const populated = await created.populate([
             { path: 'client', select: 'fullName email documentNumber' },
             { path: 'approvedBy', select: 'fullName email' },
         ]);
 
-        return this.toDomain(populated);
+        return LoanPersistenceMapper.toDomain(populated);
     }
 
     async findPaginated(page: number, limit: number, search?: string): Promise<PaginatedLoans> {
@@ -80,7 +58,7 @@ export class LoanRepository implements LoanRepositoryPort {
         ]);
 
         return {
-            data: loans.map((loan) => this.toDomain(loan)),
+            data: loans.map((loan) => LoanPersistenceMapper.toDomain(loan)),
             total,
             page,
             limit,
@@ -102,43 +80,5 @@ export class LoanRepository implements LoanRepositoryPort {
 
     private escapeRegExp(text: string): string {
         return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-
-    private toDomain(loan: LoanDocument): Loan {
-        const client = loan.client as unknown as PopulatedParty | Types.ObjectId | null;
-        const approvedBy = loan.approvedBy as unknown as PopulatedParty | Types.ObjectId | null;
-
-        return {
-            id: loan._id.toString(),
-            amount: loan.amount,
-            currency: loan.currency,
-            interestRate: loan.interestRate,
-            loanType: loan.loanType,
-            startDate: loan.startDate,
-            frequency: loan.frequency,
-            numberQuotes: loan.numberQuotes,
-            amortization: loan.amortization,
-            quotes: loan.quotes,
-            status: loan.status,
-            createdAt: (loan as any).createdAt,
-            client: this.toParty(client),
-            customerSnapshot: loan.customerSnapshot,
-            productId: loan.product ? loan.product.toString() : null,
-            productSnapshot: loan.productSnapshot ?? null,
-            approvedBy: this.toParty(approvedBy),
-        };
-    }
-
-    private toParty(value: any): Loan['client'] {
-        if (!value) return null;
-        if (value instanceof Types.ObjectId || typeof value === 'string') {
-            return { id: value.toString(), fullName: '' };
-        }
-        return {
-            id: value._id.toString(),
-            fullName: value.fullName,
-            email: value.email,
-            documentNumber: value.documentNumber,
-        };
     }
 }
