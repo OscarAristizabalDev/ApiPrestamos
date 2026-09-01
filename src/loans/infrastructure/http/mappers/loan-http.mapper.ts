@@ -2,8 +2,12 @@ import { Loan } from 'src/loans/domain/entities/loan.entity';
 import { PaginatedLoans } from 'src/loans/application/ports/outgoing/loan-repository.port';
 import { CreateLoanCommand } from 'src/loans/application/commands/create-loan.command';
 import { ListLoansCommand } from 'src/loans/application/commands/list-loans.command';
+import { GetLoanMetricsCommand } from 'src/loans/application/commands/get-loan-metrics.command';
+import { LoanMetrics } from 'src/loans/application/ports/outgoing/loan-repository.port';
 import { CreateLoanRequestDto } from '../dto/create-loan.request.dto';
 import { ListLoanRequestDto } from '../dto/list-loan.request.dto';
+import { LoanMetricsRequestDto } from '../dto/loan-metrics.request.dto';
+import { LoanMetricsResponseDto } from '../dto/loan-metrics.response.dto';
 import { LoanResponseDto, PaginatedLoanResponseDto } from '../dto/loan-response.dto';
 
 export class LoanHttpMapper {
@@ -34,6 +38,18 @@ export class LoanHttpMapper {
 
     static toListCommand(dto: ListLoanRequestDto): ListLoansCommand {
         return new ListLoansCommand(dto.page, dto.limit, dto.search);
+    }
+
+    static toMetricsCommand(dto: LoanMetricsRequestDto, role?: string): GetLoanMetricsCommand {
+        return new GetLoanMetricsCommand(
+            dto.from ? new Date(dto.from) : undefined,
+            dto.to ? new Date(dto.to) : undefined,
+            role,
+        );
+    }
+
+    static toMetricsResponse(metrics: LoanMetrics): LoanMetricsResponseDto {
+        return metrics;
     }
 
     static toResponse(loan: Loan): LoanResponseDto {

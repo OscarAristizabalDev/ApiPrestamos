@@ -11,7 +11,8 @@ export class QuoteHttpMapper {
             dto.frequency,
             dto.numberQuotes,
             dto.interestRate,
-            dto.amortization
+            dto.amortization,
+            dto.startDate
         );
     }
 

@@ -1,15 +1,19 @@
 import { BadRequestException, Body, Controller, Get, Inject, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/auth.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { ROLEACCESS } from 'src/clients/interfaces/client-repository.interface';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { AuthUser } from 'src/auth/decorators/auth-user.decorator';
 import { CurrentUserDto } from 'src/auth/dto/current-user.dto';
-import { CREATE_LOAN_USE_CASE, LIST_LOANS_USE_CASE } from 'src/loans/application/ports/incoming/tokens';
+import { CREATE_LOAN_USE_CASE, GET_LOAN_METRICS_USE_CASE, LIST_LOANS_USE_CASE } from 'src/loans/application/ports/incoming/tokens';
 import { CreateLoanUseCase } from 'src/loans/application/ports/incoming/create-loan.use-case';
 import { ListLoansUseCase } from 'src/loans/application/ports/incoming/list-loans.use-case';
+import { GetLoanMetricsUseCase } from 'src/loans/application/ports/incoming/get-loan-metrics.use-case';
 import { LoanHttpMapper } from '../mappers/loan-http.mapper';
 import { CreateLoanRequestDto } from '../dto/create-loan.request.dto';
 import { ListLoanRequestDto } from '../dto/list-loan.request.dto';
+import { LoanMetricsRequestDto } from '../dto/loan-metrics.request.dto';
 
 @ApiTags('Loans/Prestamos')
 @Controller('loans')
@@ -21,6 +25,8 @@ export class LoanController {
         private readonly createLoanUseCase: CreateLoanUseCase,
         @Inject(LIST_LOANS_USE_CASE)
         private readonly listLoansUseCase: ListLoansUseCase,
+        @Inject(GET_LOAN_METRICS_USE_CASE)
+        private readonly getLoanMetricsUseCase: GetLoanMetricsUseCase,
     ) {}
 
     @Get()
@@ -28,6 +34,15 @@ export class LoanController {
         const command = LoanHttpMapper.toListCommand(query);
         const loans = await this.listLoansUseCase.list(command);
         return LoanHttpMapper.toPaginatedResponse(loans);
+    }
+
+    /** Métricas agregadas de la cartera. Solo staff: el rol `user` no las ve. */
+    @Get('metrics')
+    @Roles(ROLEACCESS.MIDACCESS)
+    async getMetrics(@Query() query: LoanMetricsRequestDto, @AuthUser() user: CurrentUserDto) {
+        const command = LoanHttpMapper.toMetricsCommand(query, user.role);
+        const metrics = await this.getLoanMetricsUseCase.get(command);
+        return LoanHttpMapper.toMetricsResponse(metrics);
     }
 
     @Post()

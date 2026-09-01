@@ -7,6 +7,7 @@ export class CalculateQuoteCommand {
     public readonly frequency: QuoteFrequency,
     public readonly numberQuotes: number,
     public readonly interestRate: number,
-    public readonly amortization: QuoteAmortization
+    public readonly amortization: QuoteAmortization,
+    public readonly startDate?: string
   ) {}
 }

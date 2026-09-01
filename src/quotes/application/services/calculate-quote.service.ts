@@ -24,7 +24,8 @@ export class CalculateQuoteService implements CalculateQuoteUseCase{
         const amortizationStrategy = this.amortizationResolver.resolve(amortization);
 
         const quotes: Quote[] = [];
-        const startDate = new Date();
+        // Si el comando no trae fecha de inicio, se mantiene el comportamiento previo (hoy).
+        const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
 
         for (let i = 1; i <= numberQuotes; i++) {
 

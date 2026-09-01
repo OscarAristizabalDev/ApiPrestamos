@@ -1,0 +1,18 @@
+# Finales de línea: LF en el repositorio y en el árbol de trabajo.
+# Sin esto, cualquier herramienta que escriba en modo texto bajo Windows
+# convierte el archivo entero a CRLF y git lo reporta como "todas las líneas
+# modificadas", enterrando el cambio real en el diff.
+* text=auto eol=lf
+
+# Binarios: git no debe tocarlos.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.avif binary
+*.woff  binary
+*.woff2 binary
+*.ttf  binary
+*.pdf  binary

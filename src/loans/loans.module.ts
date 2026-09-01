@@ -7,7 +7,8 @@ import { ProductLookupSchema, ProductLookupSchemaClass } from './infrastructure/
 import { LoanRepository } from './infrastructure/persistence/mongo/loan.repository';
 import { CreateLoanService } from './application/services/create-loan.service';
 import { ListLoansService } from './application/services/list-loans.service';
-import { CREATE_LOAN_USE_CASE, LIST_LOANS_USE_CASE } from './application/ports/incoming/tokens';
+import { GetLoanMetricsService } from './application/services/get-loan-metrics.service';
+import { CREATE_LOAN_USE_CASE, GET_LOAN_METRICS_USE_CASE, LIST_LOANS_USE_CASE } from './application/ports/incoming/tokens';
 import { LOAN_REPOSITORY } from './application/ports/outgoing/tokens';
 
 @Module({
@@ -35,7 +36,11 @@ import { LOAN_REPOSITORY } from './application/ports/outgoing/tokens';
       provide: LIST_LOANS_USE_CASE,
       useClass: ListLoansService,
     },
+    {
+      provide: GET_LOAN_METRICS_USE_CASE,
+      useClass: GetLoanMetricsService,
+    },
   ],
-  exports: [CREATE_LOAN_USE_CASE, LIST_LOANS_USE_CASE],
+  exports: [CREATE_LOAN_USE_CASE, LIST_LOANS_USE_CASE, GET_LOAN_METRICS_USE_CASE],
 })
 export class LoansModule {}
