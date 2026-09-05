@@ -1,7 +1,15 @@
 import { Types } from 'mongoose';
-import { Loan } from 'src/loans/domain/entities/loan.entity';
+import { QuoteFrequency } from 'src/quotes/domain/enums/quote-frequency.enum';
+import { QuoteAmortization } from 'src/quotes/domain/enums/quote-amortization.enum';
+import { Loan, LoanParty } from 'src/loans/domain/entities/loan.entity';
+import { LoanType } from 'src/loans/domain/enums/loan-type.enum';
 import { CreateLoanCommand } from 'src/loans/application/commands/create-loan.command';
-import { LoanDocument } from '../schemas/loan.schema';
+import {
+    CustomerSnapshotSchemaClass,
+    LoanDocument,
+    LoanQuoteSchemaClass,
+    ProductSnapshotSchemaClass,
+} from '../schemas/loan.schema';
 
 // Shape of `client`/`approvedBy` once populated by Mongoose; kept local to avoid depending on other modules' schemas.
 interface PopulatedParty {
@@ -11,9 +19,29 @@ interface PopulatedParty {
     documentNumber?: string;
 }
 
+type PartyReference = PopulatedParty | Types.ObjectId | null;
+
+// Mirrors the persisted document shape (`LoanSchemaClass`), not the incoming command.
+interface CreateLoanDoc {
+    client: Types.ObjectId;
+    customerSnapshot: CustomerSnapshotSchemaClass;
+    approvedBy: Types.ObjectId;
+    product: Types.ObjectId | null;
+    productSnapshot: ProductSnapshotSchemaClass | null;
+    amount: number;
+    currency: string;
+    interestRate: number;
+    loanType: LoanType;
+    startDate: Date;
+    frequency: QuoteFrequency;
+    numberQuotes: number;
+    amortization: QuoteAmortization;
+    quotes: LoanQuoteSchemaClass[];
+}
+
 export class LoanPersistenceMapper {
 
-    static toCreateDoc(command: CreateLoanCommand): Record<string, unknown> {
+    static toCreateDoc(command: CreateLoanCommand): CreateLoanDoc {
         return {
             client: new Types.ObjectId(command.clientId),
             customerSnapshot: command.customerSnapshot,
@@ -33,8 +61,8 @@ export class LoanPersistenceMapper {
     }
 
     static toDomain(loan: LoanDocument): Loan {
-        const client = loan.client as unknown as PopulatedParty | Types.ObjectId | null;
-        const approvedBy = loan.approvedBy as unknown as PopulatedParty | Types.ObjectId | null;
+        const client = loan.client as unknown as PartyReference;
+        const approvedBy = loan.approvedBy as unknown as PartyReference;
 
         return {
             id: loan._id.toString(),
@@ -48,7 +76,7 @@ export class LoanPersistenceMapper {
             amortization: loan.amortization,
             quotes: loan.quotes,
             status: loan.status,
-            createdAt: (loan as any).createdAt,
+            createdAt: loan.createdAt,
             client: this.toParty(client),
             customerSnapshot: loan.customerSnapshot,
             productId: loan.product ? loan.product.toString() : null,
@@ -57,9 +85,9 @@ export class LoanPersistenceMapper {
         };
     }
 
-    private static toParty(value: any): Loan['client'] {
+    private static toParty(value: PartyReference): LoanParty | null {
         if (!value) return null;
-        if (value instanceof Types.ObjectId || typeof value === 'string') {
+        if (value instanceof Types.ObjectId) {
             return { id: value.toString(), fullName: '' };
         }
         return {

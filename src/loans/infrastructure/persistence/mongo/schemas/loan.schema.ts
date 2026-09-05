@@ -140,6 +140,10 @@ export class LoanSchemaClass {
 
     @Prop({ required: true, enum: LoanStatus, default: LoanStatus.ACTIVE })
     status: LoanStatus;
+
+    // Populated at runtime by the `timestamps: true` schema option; declared here so consumers get typed access instead of `any`.
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export const LoanSchema = SchemaFactory.createForClass(LoanSchemaClass);
