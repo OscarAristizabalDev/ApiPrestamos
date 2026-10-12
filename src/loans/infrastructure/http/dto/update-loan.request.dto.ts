@@ -60,7 +60,7 @@ export class UpdateLoanRequestDto {
 
     @ApiPropertyOptional({
         type: () => [LoanQuoteRequestDto],
-        description: 'Schedule from POST /quotes; required when amount, interestRate, startDate, frequency, numberQuotes or amortization change',
+        description: 'Schedule from POST /quotes/calculate; required when amount, interestRate, startDate, frequency, numberQuotes or amortization change',
     })
     @IsOptional()
     @IsArray()

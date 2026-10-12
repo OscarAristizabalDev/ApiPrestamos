@@ -73,6 +73,7 @@ async function bootstrap() {
       .setDescription('Documentación para la autenticación con JWT y Refresh Tokens')
       .setVersion('1.0')
       .addCookieAuth('refreshToken')
+      .addBearerAuth()
       .build();
 
     const document = SwaggerModule.createDocument(app, configSawgger);

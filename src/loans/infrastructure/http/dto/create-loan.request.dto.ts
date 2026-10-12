@@ -50,7 +50,7 @@ export class CreateLoanRequestDto {
     @IsEnum(LoanType)
     readonly loanType: LoanType;
 
-    @ApiProperty({ description: 'ISO-8601 start date; must match the one sent to POST /quotes', example: '2026-11-01' })
+    @ApiProperty({ description: 'ISO-8601 start date; must match the one sent to POST /quotes/calculate', example: '2026-11-01' })
     @IsDateString()
     readonly startDate: string;
 
@@ -72,7 +72,7 @@ export class CreateLoanRequestDto {
     @IsEnum(QuoteAmortization)
     readonly amortization: QuoteAmortization;
 
-    @ApiProperty({ type: () => [LoanQuoteRequestDto], description: 'Schedule from POST /quotes; must match the loan terms' })
+    @ApiProperty({ type: () => [LoanQuoteRequestDto], description: 'Schedule from POST /quotes/calculate; must match the loan terms' })
     @IsArray()
     @ArrayMinSize(1)
     @ValidateNested({ each: true })

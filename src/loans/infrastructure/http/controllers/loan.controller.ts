@@ -11,7 +11,7 @@ import {
     Query,
     UseGuards,
 } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { ROLEACCESS } from 'src/clients/interfaces/client-repository.interface';
@@ -38,6 +38,7 @@ import { ListLoanRequestDto } from '../dto/list-loan.request.dto';
 import { LoanMetricsRequestDto } from '../dto/loan-metrics.request.dto';
 
 @ApiTags('Loans/Prestamos')
+@ApiBearerAuth()
 @Controller('loans')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class LoanController {
