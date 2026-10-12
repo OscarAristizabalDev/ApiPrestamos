@@ -11,7 +11,7 @@ import {
     Query,
     UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { ROLEACCESS } from 'src/clients/interfaces/client-repository.interface';
@@ -32,6 +32,7 @@ import { LoanNotEditableError } from 'src/loans/domain/errors/loan-not-editable.
 import { LoanHttpMapper } from '../mappers/loan-http.mapper';
 import { CreateLoanRequestDto } from '../dto/create-loan.request.dto';
 import { UpdateLoanRequestDto } from '../dto/update-loan.request.dto';
+import { LoanResponseDto, PaginatedLoanResponseDto } from '../dto/loan-response.dto';
 import { ListLoanRequestDto } from '../dto/list-loan.request.dto';
 import { LoanMetricsRequestDto } from '../dto/loan-metrics.request.dto';
 
@@ -52,6 +53,7 @@ export class LoanController {
     ) {}
 
     @Get()
+    @ApiOkResponse({ type: PaginatedLoanResponseDto })
     async getLoans(@Query() query: ListLoanRequestDto) {
         const command = LoanHttpMapper.toListCommand(query);
         const loans = await this.listLoansUseCase.list(command);
@@ -68,6 +70,7 @@ export class LoanController {
     }
 
     @Post()
+    @ApiCreatedResponse({ type: LoanResponseDto })
     async createLoan(@Body() bodyLoan: CreateLoanRequestDto, @AuthUser() user: CurrentUserDto) {
         if (!bodyLoan || Object.keys(bodyLoan).length === 0) {
             throw new BadRequestException('El cuerpo de la petición no puede estar vacío');
@@ -80,6 +83,7 @@ export class LoanController {
 
     /** Ownership is checked in the use case: the advisor who registered the loan or a superadmin. */
     @Patch(':id')
+    @ApiOkResponse({ type: LoanResponseDto })
     async updateLoan(
         @Param('id') loanId: string,
         @Body() bodyLoan: UpdateLoanRequestDto,

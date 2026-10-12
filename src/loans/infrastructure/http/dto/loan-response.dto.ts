@@ -1,4 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { LoanStatus } from 'src/loans/domain/enums/loan-status.enum';
+import { LoanType } from 'src/loans/domain/enums/loan-type.enum';
+import { QuoteFrequency } from 'src/quotes/domain/enums/quote-frequency.enum';
+import { QuoteAmortization } from 'src/quotes/domain/enums/quote-amortization.enum';
 
 export class LoanPartyResponseDto {
     @ApiProperty()
@@ -89,7 +93,7 @@ export class LoanQuoteResponseDto {
     totalValue: number;
 
     @ApiProperty({
-        example: '2026-01-15',
+        example: '2026-01-15T00:00:00.000Z',
         description: 'Expiration date in ISO-8601 format',
     })
     expirationDate: string;
@@ -105,28 +109,28 @@ export class LoanResponseDto {
     @ApiProperty({ example: 'COP' })
     currency: string;
 
-    @ApiProperty({ example: 0.02 })
+    @ApiProperty({ example: 2.5, description: 'Interest rate per period, as a percentage' })
     interestRate: number;
 
-    @ApiProperty({ example: 'CASH' })
+    @ApiProperty({ enum: LoanType, example: LoanType.CASH })
     loanType: string;
 
-    @ApiProperty({ example: '2026-01-15' })
+    @ApiProperty({ example: '2026-01-15T00:00:00.000Z', description: 'Start date in ISO-8601 format' })
     startDate: string;
 
-    @ApiProperty({ example: 'MONTHLY' })
+    @ApiProperty({ enum: QuoteFrequency, example: QuoteFrequency.MONTHLY })
     frequency: string;
 
     @ApiProperty({ example: 12 })
     numberQuotes: number;
 
-    @ApiProperty({ example: 'FRENCH' })
+    @ApiProperty({ enum: QuoteAmortization, example: QuoteAmortization.FRENCH })
     amortization: string;
 
     @ApiProperty({ type: [LoanQuoteResponseDto] })
     quotes: LoanQuoteResponseDto[];
 
-    @ApiProperty({ example: 'ACTIVE' })
+    @ApiProperty({ enum: LoanStatus, example: LoanStatus.ACTIVE })
     status: string;
 
     @ApiProperty({ type: LoanPartyResponseDto, nullable: true })
