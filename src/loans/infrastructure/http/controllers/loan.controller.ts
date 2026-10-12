@@ -1,4 +1,16 @@
-import { BadRequestException, Body, Controller, Get, Inject, Post, Query, UseGuards } from '@nestjs/common';
+import {
+    BadRequestException,
+    Body,
+    ConflictException,
+    Controller,
+    Get,
+    Inject,
+    Param,
+    Patch,
+    Post,
+    Query,
+    UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -6,12 +18,20 @@ import { ROLEACCESS } from 'src/clients/interfaces/client-repository.interface';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { AuthUser } from 'src/auth/decorators/auth-user.decorator';
 import { CurrentUserDto } from 'src/auth/dto/current-user.dto';
-import { CREATE_LOAN_USE_CASE, GET_LOAN_METRICS_USE_CASE, LIST_LOANS_USE_CASE } from 'src/loans/application/ports/incoming/tokens';
+import {
+    CREATE_LOAN_USE_CASE,
+    GET_LOAN_METRICS_USE_CASE,
+    LIST_LOANS_USE_CASE,
+    UPDATE_LOAN_USE_CASE,
+} from 'src/loans/application/ports/incoming/tokens';
 import { CreateLoanUseCase } from 'src/loans/application/ports/incoming/create-loan.use-case';
 import { ListLoansUseCase } from 'src/loans/application/ports/incoming/list-loans.use-case';
 import { GetLoanMetricsUseCase } from 'src/loans/application/ports/incoming/get-loan-metrics.use-case';
+import { UpdateLoanUseCase } from 'src/loans/application/ports/incoming/update-loan.use-case';
+import { LoanNotEditableError } from 'src/loans/domain/errors/loan-not-editable.error';
 import { LoanHttpMapper } from '../mappers/loan-http.mapper';
 import { CreateLoanRequestDto } from '../dto/create-loan.request.dto';
+import { UpdateLoanRequestDto } from '../dto/update-loan.request.dto';
 import { ListLoanRequestDto } from '../dto/list-loan.request.dto';
 import { LoanMetricsRequestDto } from '../dto/loan-metrics.request.dto';
 
@@ -27,6 +47,8 @@ export class LoanController {
         private readonly listLoansUseCase: ListLoansUseCase,
         @Inject(GET_LOAN_METRICS_USE_CASE)
         private readonly getLoanMetricsUseCase: GetLoanMetricsUseCase,
+        @Inject(UPDATE_LOAN_USE_CASE)
+        private readonly updateLoanUseCase: UpdateLoanUseCase,
     ) {}
 
     @Get()
@@ -54,5 +76,30 @@ export class LoanController {
         const command = LoanHttpMapper.toCreateCommand(bodyLoan, user.id);
         const loan = await this.createLoanUseCase.create(command);
         return LoanHttpMapper.toResponse(loan);
+    }
+
+    /** Ownership is checked in the use case: the advisor who registered the loan or a superadmin. */
+    @Patch(':id')
+    async updateLoan(
+        @Param('id') loanId: string,
+        @Body() bodyLoan: UpdateLoanRequestDto,
+        @AuthUser() user: CurrentUserDto,
+    ) {
+        if (!bodyLoan || Object.keys(bodyLoan).length === 0) {
+            throw new BadRequestException('El cuerpo de la petición no puede estar vacío');
+        }
+
+        const command = LoanHttpMapper.toUpdateCommand(loanId, bodyLoan, user.id, user.role);
+
+        try {
+            const loan = await this.updateLoanUseCase.update(command);
+            return LoanHttpMapper.toResponse(loan);
+        } catch (error) {
+            // Domain errors carry no HTTP semantics; translate them here.
+            if (error instanceof LoanNotEditableError) {
+                throw new ConflictException('El préstamo ya no está activo y no se puede editar');
+            }
+            throw error;
+        }
     }
 }

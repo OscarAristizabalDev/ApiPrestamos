@@ -1,10 +1,12 @@
 import { Loan } from 'src/loans/domain/entities/loan.entity';
 import { PaginatedLoans } from 'src/loans/application/ports/outgoing/loan-repository.port';
 import { CreateLoanCommand } from 'src/loans/application/commands/create-loan.command';
+import { UpdateLoanCommand } from 'src/loans/application/commands/update-loan.command';
 import { ListLoansCommand } from 'src/loans/application/commands/list-loans.command';
 import { GetLoanMetricsCommand } from 'src/loans/application/commands/get-loan-metrics.command';
 import { LoanMetrics } from 'src/loans/application/ports/outgoing/loan-repository.port';
 import { CreateLoanRequestDto } from '../dto/create-loan.request.dto';
+import { UpdateLoanRequestDto } from '../dto/update-loan.request.dto';
 import { ListLoanRequestDto } from '../dto/list-loan.request.dto';
 import { LoanMetricsRequestDto } from '../dto/loan-metrics.request.dto';
 import { LoanMetricsResponseDto } from '../dto/loan-metrics.response.dto';
@@ -33,6 +35,35 @@ export class LoanHttpMapper {
             })),
             dto.productId ?? null,
             dto.productSnapshot ?? null,
+        );
+    }
+
+    static toUpdateCommand(
+        loanId: string,
+        dto: UpdateLoanRequestDto,
+        actorId: string,
+        actorRole: string,
+    ): UpdateLoanCommand {
+        return new UpdateLoanCommand(
+            loanId,
+            actorId,
+            actorRole,
+            {
+                amount: dto.amount,
+                currency: dto.currency,
+                interestRate: dto.interestRate,
+                startDate: dto.startDate ? new Date(dto.startDate) : undefined,
+                frequency: dto.frequency,
+                numberQuotes: dto.numberQuotes,
+                amortization: dto.amortization,
+            },
+            dto.quotes?.map((quote) => ({
+                number: quote.number,
+                value: quote.value,
+                interestValue: quote.interestValue,
+                totalValue: quote.totalValue,
+                expirationDate: new Date(quote.expirationDate),
+            })) ?? null,
         );
     }
 
