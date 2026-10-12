@@ -1,4 +1,6 @@
+import { Quote } from 'src/quotes/domain/entities/quote.entity';
 import { Loan } from 'src/loans/domain/entities/loan.entity';
+import { LoanChanges } from 'src/loans/domain/entities/loan-changes.entity';
 import { CreateLoanCommand } from '../../commands/create-loan.command';
 
 export interface PaginatedLoans {
@@ -76,6 +78,12 @@ export interface LoanRepositoryPort {
     create(command: CreateLoanCommand): Promise<Loan>;
     findPaginated(page: number, limit: number, search?: string): Promise<PaginatedLoans>;
     getMetrics(filter: LoanMetricsFilter): Promise<LoanMetrics>;
+    findById(loanId: string): Promise<Loan | null>;
+    /**
+     * Applies only the given changes; `quotes` replaces the schedule when not null.
+     * Returns null when the loan is no longer editable (e.g. its status changed concurrently).
+     */
+    update(loanId: string, changes: LoanChanges, quotes: Quote[] | null): Promise<Loan | null>;
     clientExists(clientId: string): Promise<boolean>;
     productExists(productId: string): Promise<boolean>;
 }

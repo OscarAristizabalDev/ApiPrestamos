@@ -2,6 +2,8 @@ import { Types } from 'mongoose';
 import { QuoteFrequency } from 'src/quotes/domain/enums/quote-frequency.enum';
 import { QuoteAmortization } from 'src/quotes/domain/enums/quote-amortization.enum';
 import { Loan, LoanParty } from 'src/loans/domain/entities/loan.entity';
+import { LoanChanges } from 'src/loans/domain/entities/loan-changes.entity';
+import { Quote } from 'src/quotes/domain/entities/quote.entity';
 import { LoanType } from 'src/loans/domain/enums/loan-type.enum';
 import { CreateLoanCommand } from 'src/loans/application/commands/create-loan.command';
 import {
@@ -39,6 +41,9 @@ interface CreateLoanDoc {
     quotes: LoanQuoteSchemaClass[];
 }
 
+// Partial `$set` payload: only edited terms, plus the schedule when it was recalculated.
+type UpdateLoanDoc = LoanChanges & { quotes?: LoanQuoteSchemaClass[] };
+
 export class LoanPersistenceMapper {
 
     static toCreateDoc(command: CreateLoanCommand): CreateLoanDoc {
@@ -57,6 +62,13 @@ export class LoanPersistenceMapper {
             numberQuotes: command.numberQuotes,
             amortization: command.amortization,
             quotes: command.quotes,
+        };
+    }
+
+    static toUpdateDoc(changes: LoanChanges, quotes: Quote[] | null): UpdateLoanDoc {
+        return {
+            ...changes,
+            ...(quotes ? { quotes } : {}),
         };
     }
 

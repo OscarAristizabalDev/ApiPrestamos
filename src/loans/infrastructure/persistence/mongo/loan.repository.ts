@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage, Types } from 'mongoose';
+import { Quote } from 'src/quotes/domain/entities/quote.entity';
 import { Loan } from 'src/loans/domain/entities/loan.entity';
+import { LoanChanges } from 'src/loans/domain/entities/loan-changes.entity';
+import { EDITABLE_LOAN_STATUSES } from 'src/loans/domain/policies/loan-edit.policy';
 import { CreateLoanCommand } from 'src/loans/application/commands/create-loan.command';
 import { LoanStatus } from 'src/loans/domain/enums/loan-status.enum';
 import {
@@ -105,6 +108,35 @@ export class LoanRepository implements LoanRepositoryPort {
         ]);
 
         return LoanPersistenceMapper.toDomain(populated);
+    }
+
+    async findById(loanId: string): Promise<Loan | null> {
+        if (!Types.ObjectId.isValid(loanId)) return null;
+
+        const loan = await this.loanModel
+            .findById(loanId)
+            .populate('client', 'fullName email documentNumber')
+            .populate('approvedBy', 'fullName email')
+            .exec();
+
+        return loan ? LoanPersistenceMapper.toDomain(loan) : null;
+    }
+
+    async update(loanId: string, changes: LoanChanges, quotes: Quote[] | null): Promise<Loan | null> {
+        if (!Types.ObjectId.isValid(loanId)) return null;
+
+        // Conditioned on status so a concurrent close (paid/cancelled) is never overwritten.
+        const updated = await this.loanModel
+            .findOneAndUpdate(
+                { _id: loanId, status: { $in: EDITABLE_LOAN_STATUSES } },
+                { $set: LoanPersistenceMapper.toUpdateDoc(changes, quotes) },
+                { new: true, runValidators: true },
+            )
+            .populate('client', 'fullName email documentNumber')
+            .populate('approvedBy', 'fullName email')
+            .exec();
+
+        return updated ? LoanPersistenceMapper.toDomain(updated) : null;
     }
 
     async findPaginated(page: number, limit: number, search?: string): Promise<PaginatedLoans> {
