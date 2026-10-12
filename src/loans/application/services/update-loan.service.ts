@@ -1,9 +1,12 @@
-import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    ConflictException,
+    ForbiddenException,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { canModifyOwned } from 'src/auth/ownership';
-import { CALCULATE_QUOTE_USE_CASE } from 'src/quotes/application/ports/incoming/tokens';
-import { CalculateQuoteUseCase } from 'src/quotes/application/ports/incoming/calculate-quote.use-case';
-import { CalculateQuoteCommand } from 'src/quotes/application/commands/calculate-quote.command';
-import { Quote } from 'src/quotes/domain/entities/quote.entity';
 import { Loan } from 'src/loans/domain/entities/loan.entity';
 import { LoanChanges } from 'src/loans/domain/entities/loan-changes.entity';
 import {
@@ -11,6 +14,7 @@ import {
     changedFields,
     requiresScheduleRecalculation,
 } from 'src/loans/domain/policies/loan-edit.policy';
+import { ScheduleTerms, quotesMatchTerms } from 'src/loans/domain/policies/loan-schedule.policy';
 import { UpdateLoanCommand } from '../commands/update-loan.command';
 import { UpdateLoanUseCase } from '../ports/incoming/update-loan.use-case';
 import { LOAN_REPOSITORY } from '../ports/outgoing/tokens';
@@ -22,8 +26,6 @@ export class UpdateLoanService implements UpdateLoanUseCase {
     constructor(
         @Inject(LOAN_REPOSITORY)
         private readonly loanRepository: LoanRepositoryPort,
-        @Inject(CALCULATE_QUOTE_USE_CASE)
-        private readonly calculateQuoteUseCase: CalculateQuoteUseCase,
     ) {}
 
     async update(command: UpdateLoanCommand): Promise<Loan> {
@@ -51,9 +53,16 @@ export class UpdateLoanService implements UpdateLoanUseCase {
             fields.map((field) => [field, command.changes[field]]),
         ) as LoanChanges;
 
-        const quotes = requiresScheduleRecalculation(loan, changes)
-            ? await this.recalculateQuotes(loan, changes)
-            : null;
+        // Quotes are only replaced when a schedule term changed; otherwise the current schedule stays.
+        const scheduleChanged = requiresScheduleRecalculation(loan, changes);
+        if (scheduleChanged && !command.quotes?.length) {
+            throw new BadRequestException('Debes enviar las cuotas recalculadas para los nuevos términos del préstamo');
+        }
+        const quotes = scheduleChanged ? command.quotes : null;
+
+        if (quotes && !quotesMatchTerms(this.mergeTerms(loan, changes), quotes)) {
+            throw new BadRequestException('Las cuotas enviadas no corresponden a los términos del préstamo');
+        }
 
         const updated = await this.loanRepository.update(loan.id, changes, quotes);
 
@@ -64,16 +73,12 @@ export class UpdateLoanService implements UpdateLoanUseCase {
         return updated;
     }
 
-    private recalculateQuotes(loan: Loan, changes: LoanChanges): Promise<Quote[]> {
-        const startDate = changes.startDate ?? loan.startDate;
-
-        return this.calculateQuoteUseCase.calculate(new CalculateQuoteCommand(
-            changes.amount ?? loan.amount,
-            changes.frequency ?? loan.frequency,
-            changes.numberQuotes ?? loan.numberQuotes,
-            changes.interestRate ?? loan.interestRate,
-            changes.amortization ?? loan.amortization,
-            startDate.toISOString(),
-        ));
+    // Terms the loan will have once the changes are applied.
+    private mergeTerms(loan: Loan, changes: LoanChanges): ScheduleTerms {
+        return {
+            amount: changes.amount ?? loan.amount,
+            startDate: changes.startDate ?? loan.startDate,
+            numberQuotes: changes.numberQuotes ?? loan.numberQuotes,
+        };
     }
 }

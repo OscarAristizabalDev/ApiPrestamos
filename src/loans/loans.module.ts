@@ -8,7 +8,13 @@ import { LoanRepository } from './infrastructure/persistence/mongo/loan.reposito
 import { CreateLoanService } from './application/services/create-loan.service';
 import { ListLoansService } from './application/services/list-loans.service';
 import { GetLoanMetricsService } from './application/services/get-loan-metrics.service';
-import { CREATE_LOAN_USE_CASE, GET_LOAN_METRICS_USE_CASE, LIST_LOANS_USE_CASE } from './application/ports/incoming/tokens';
+import { UpdateLoanService } from './application/services/update-loan.service';
+import {
+  CREATE_LOAN_USE_CASE,
+  GET_LOAN_METRICS_USE_CASE,
+  LIST_LOANS_USE_CASE,
+  UPDATE_LOAN_USE_CASE,
+} from './application/ports/incoming/tokens';
 import { LOAN_REPOSITORY } from './application/ports/outgoing/tokens';
 
 @Module({
@@ -40,7 +46,11 @@ import { LOAN_REPOSITORY } from './application/ports/outgoing/tokens';
       provide: GET_LOAN_METRICS_USE_CASE,
       useClass: GetLoanMetricsService,
     },
+    {
+      provide: UPDATE_LOAN_USE_CASE,
+      useClass: UpdateLoanService,
+    },
   ],
-  exports: [CREATE_LOAN_USE_CASE, LIST_LOANS_USE_CASE, GET_LOAN_METRICS_USE_CASE],
+  exports: [CREATE_LOAN_USE_CASE, LIST_LOANS_USE_CASE, GET_LOAN_METRICS_USE_CASE, UPDATE_LOAN_USE_CASE],
 })
 export class LoansModule {}
