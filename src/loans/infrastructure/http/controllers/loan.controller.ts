@@ -33,6 +33,7 @@ import { LoanHttpMapper } from '../mappers/loan-http.mapper';
 import { CreateLoanRequestDto } from '../dto/create-loan.request.dto';
 import { UpdateLoanRequestDto } from '../dto/update-loan.request.dto';
 import { LoanResponseDto, PaginatedLoanResponseDto } from '../dto/loan-response.dto';
+import { LoanMetricsResponseDto } from '../dto/loan-metrics.response.dto';
 import { ListLoanRequestDto } from '../dto/list-loan.request.dto';
 import { LoanMetricsRequestDto } from '../dto/loan-metrics.request.dto';
 
@@ -62,6 +63,7 @@ export class LoanController {
 
     /** Métricas agregadas de la cartera. Solo staff: el rol `user` no las ve. */
     @Get('metrics')
+    @ApiOkResponse({ type: LoanMetricsResponseDto })
     @Roles(ROLEACCESS.MIDACCESS)
     async getMetrics(@Query() query: LoanMetricsRequestDto, @AuthUser() user: CurrentUserDto) {
         const command = LoanHttpMapper.toMetricsCommand(query, user.role);
