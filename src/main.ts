@@ -77,7 +77,10 @@ async function bootstrap() {
       .build();
 
     const document = SwaggerModule.createDocument(app, configSawgger);
-    SwaggerModule.setup('api', app, document);
+    // Keep the pasted token across reloads (stored in the browser's localStorage).
+    SwaggerModule.setup('api', app, document, {
+      swaggerOptions: { persistAuthorization: true },
+    });
   }
 
   const port = configService.get<number>('PORT') || 3000;
