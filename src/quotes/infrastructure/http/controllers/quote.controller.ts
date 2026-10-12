@@ -1,6 +1,7 @@
 import { ModuleRef } from "@nestjs/core";
-import { Body, Controller, Inject, Post } from "@nestjs/common";
-import { ApiCreatedResponse, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Inject, Post, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from "@nestjs/swagger";
+import { JwtAuthGuard } from "src/auth/guards/auth.guard";
 
 import { QuoteHttpMapper } from "../mappers/quote-http.mapper";
 import { CalculateQuoteRequestDto } from "../dto/calculate-quote.request.dto";
@@ -9,7 +10,9 @@ import { CALCULATE_QUOTE_USE_CASE } from "src/quotes/application/ports/incoming/
 import { CalculateQuoteUseCase } from "src/quotes/application/ports/incoming/calculate-quote.use-case";
 
 @ApiTags('Quotes/Cuotas')
+@ApiBearerAuth()
 @Controller('quotes')
+@UseGuards(JwtAuthGuard)
 export class QuoteController {
 
     constructor(
